@@ -13,7 +13,7 @@ deps:
 
 install:
 ifeq ($(OS),Windows_NT)
-	mv upip.exe $(USERPROFILE)\
+	mv upip.exe "$(USERPROFILE)\\"
 else  # linux and other
 	mv upip ~/.local/bin/
 endif
