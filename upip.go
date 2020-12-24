@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/go-ini/ini"
 	"os"
 	"upip/base_cfg"
 	"upip/cmd"
 	"upip/help"
 	"upip/utils"
+
+	"github.com/go-ini/ini"
 )
 
 func loadConfig(configDir string) *ini.File {
