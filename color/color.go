@@ -8,7 +8,6 @@ import (
 // It's lightweight module for colorize text
 // NOTE! Function declares here will work correctly only in Go 1.10+,
 // cause older versions not supported strings Builder.
-// WARNING! Currently have only Linux support
 
 const (
 	PREFIX_CODE = "\033["
