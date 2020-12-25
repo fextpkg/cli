@@ -47,7 +47,7 @@ func main() {
 		command := args[0]
 		args = args[1:]
 		config := loadConfig(configDir)
-		libDirKey := config.Section("main").Key("libDirKey")
+		libDirKey := config.Section("main").Key("libDir")
 
 		if libDirKey.String() == "" {
 			// init
