@@ -29,7 +29,10 @@ func SelectOneDirectory(baseDir string, versions []string) string {
 
 func getPythonDirectory(baseDir, prefix string) string {
 	var versions []string
-	dirInfo, _ := ioutil.ReadDir(baseDir)
+	dirInfo, err := ioutil.ReadDir(baseDir)
+	if err != nil {
+		panic(err)
+	}
 
 	for _, dir := range dirInfo {
 		name := dir.Name()
