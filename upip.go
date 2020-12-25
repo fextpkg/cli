@@ -41,7 +41,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		} else {
-			configDir += "/"
+			configDir += string(os.PathSeparator)
 		}
 
 		command := args[0]

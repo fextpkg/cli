@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"regexp"
 	"runtime"
 	"strings"
@@ -56,11 +57,16 @@ func GetPythonBinDirectory(version string) string {
 // select one dir without version
 func FindPythonLibDirectory() string {
 	if OS == "windows" {
-		return getPythonDirectory("C:\\", "Python") + "\\Lib\\site-packages"
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			panic(err)
+		}
+
+		return getPythonDirectory(homeDir + "\\AppData\\Local\\Programs\\Python\\", "Python") + "\\Lib\\site-packages"
 	} else if OS == "linux" {
 		return getPythonDirectory("/usr/lib/", "python") + "/site-packages"
-	} else if OS == "" {
-		// TODO
+	} else if OS == "darwin" { // mac os
+		return getPythonDirectory("/usr/local/lib/", "python") + "/site-packages"
 	}
 
 	panic("Unsupported OS\n")
@@ -69,7 +75,12 @@ func FindPythonLibDirectory() string {
 func ParsePythonVersion(path string) string {
 	re, _ := regexp.Compile(`\d[\d|\.]+`)
 	v := re.FindString(path)
+
 	if OS == "windows" {
+		if v == "" {
+			panic("Unable to parse version. Please check, that the selected directory contains version")
+		}
+
 		v = fmt.Sprint(v[0], ".", v[1:])
 	}
 
