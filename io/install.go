@@ -17,13 +17,14 @@ type Package struct {
 	Operators [][]string
 }
 
-func (pkg *Package) PrepareInstall() {
+// clean pkgName and split operators
+func (pkg *Package) Prepare() {
 	pkg.Name, pkg.Operators = utils.SplitOperators(pkg.Name)
 }
 
 // Returns pkgName, version, dependencies
 func (pkg *Package) DefaultInstall(offset int) (string, string, []string, error) {
-	pkg.PrepareInstall()
+	pkg.Prepare()
 
 	nameWithOffset := strings.Repeat(" ", offset * 4) + pkg.Name // used for beauty print when dependency installed
 	fmt.Printf("\r%s - Scanning package..", nameWithOffset)
@@ -56,6 +57,9 @@ func (pkg *Package) install(buffer interface{Write([]byte) (int, error)
 	if CheckPackageExists(pkg.Name, pkg.LibDir, [][]string{[]string{"==", pkgVersion}}) {
 		return "", nil, errors.New("Package already installed")
 	}
+
+	// uninstall all other versions of package
+	UninstallPackage(pkg.LibDir, pkg.Name)
 
 	filePath, err := downloadPackage(buffer, link, pkg.LibDir)
 	if err != nil {
