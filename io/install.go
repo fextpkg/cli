@@ -12,8 +12,8 @@ import (
 )
 
 type Package struct {
-	Name string
-	LibDir string
+	Name      string
+	LibDir    string
 	Operators [][]string
 }
 
@@ -26,13 +26,16 @@ func (pkg *Package) Prepare() {
 func (pkg *Package) DefaultInstall(offset int) (string, string, []string, error) {
 	pkg.Prepare()
 
-	nameWithOffset := strings.Repeat(" ", offset * 4) + pkg.Name // used for beauty print when dependency installed
+	nameWithOffset := strings.Repeat(" ", offset*4) + pkg.Name // used for beauty print when dependency installed
 	fmt.Printf("\r%s - Scanning package..", nameWithOffset)
+
+	maxMessageLength := base_cfg.MAX_MESSAGE_LENGTH + len(pkg.Name)
 	version, dependencies, err := pkg.install(&Buffer{
-		pkgName: pkg.Name,
-		maxMessageLength: base_cfg.MAX_MESSAGE_LENGTH + len(pkg.Name),
+		pkgName:          pkg.Name,
+		maxMessageLength: maxMessageLength,
 	})
-	utils.ClearLastMessage(base_cfg.MAX_MESSAGE_LENGTH + len(pkg.Name))
+
+	utils.ClearLastMessage(maxMessageLength)
 	if err != nil {
 		return nameWithOffset, "", nil, err
 	}
@@ -41,8 +44,10 @@ func (pkg *Package) DefaultInstall(offset int) (string, string, []string, error)
 }
 
 // Returns version, dependencies
-func (pkg *Package) install(buffer interface{Write([]byte) (int, error)
-UpdateTotal(int)}) (string, []string, error) {
+func (pkg *Package) install(buffer interface {
+	Write([]byte) (int, error)
+	UpdateTotal(int)
+}) (string, []string, error) {
 	doc, err := getPackageList(pkg.Name)
 	if err != nil {
 		return "", nil, err
@@ -54,7 +59,7 @@ UpdateTotal(int)}) (string, []string, error) {
 		return "", nil, err
 	}
 
-	if CheckPackageExists(pkg.Name, pkg.LibDir, [][]string{[]string{"==", pkgVersion}}) {
+	if CheckPackageExists(pkg.Name, pkg.LibDir, [][]string{{"==", pkgVersion}}) {
 		return "", nil, errors.New("Package already installed")
 	}
 
@@ -72,7 +77,6 @@ UpdateTotal(int)}) (string, []string, error) {
 		return "", nil, err
 	}
 
-
 	p, err := whl.LoadPackage(pkg.Name, pkg.LibDir)
 	if err != nil {
 		return "", nil, err
@@ -89,7 +93,6 @@ func setupPackage(pathToFile string) error {
 func SingleThreadDownload(libDir string, packages []string, offset int) (int, int) {
 	var count, dependencyCount int
 
-
 	for _, name := range packages {
 		pkg := Package{Name: name, LibDir: libDir}
 		pkgName, pkgVersion, dependencies, err := pkg.DefaultInstall(offset)
@@ -101,8 +104,8 @@ func SingleThreadDownload(libDir string, packages []string, offset int) (int, in
 			color.PrintflnStatusOK("\r%s (%s) - Installed", pkgName, pkgVersion)
 
 			if len(dependencies) > 0 {
-				fmt.Println(strings.Repeat(" ", offset * 4) + "-> Installing dependencies")
-				c, dc := SingleThreadDownload(libDir, dependencies, offset + 1)
+				fmt.Println(strings.Repeat(" ", offset*4) + "-> Installing dependencies")
+				c, dc := SingleThreadDownload(libDir, dependencies, offset+1)
 				dependencyCount += c + dc
 			}
 		}
