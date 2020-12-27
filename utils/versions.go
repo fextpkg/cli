@@ -1,11 +1,9 @@
 package utils
 
 import (
-	"errors"
 	"regexp"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 // Need for correct check, cause version can have two or more digits in section
@@ -21,22 +19,6 @@ func equateVersions(v1, v2 string) (a, b string) {
 	}
 
 	return v1, v2
-}
-
-func convertLettersToIntString(letters string) string {
-	var out string
-
-	for _, v := range letters {
-		if !unicode.IsDigit(v) {
-			// 97 is index of start letters in lowercase. We don't use original
-			// indexes cause version check function works faster
-			out += strconv.Itoa(int(v - 96))
-		} else {
-			out += string(v)
-		}
-	}
-
-	return out
 }
 
 // Returns versions (E.g. 4.0.0a0 => 40010)
@@ -68,39 +50,12 @@ func parseAndEquateVersions(rawv1, rawv2 string) (int, int) {
 	return v1c, v2c
 }
 
-// this functions implemented cause golang not support __eq__ methods as a python
-
-// == (equal)
-func eq(v1, v2 int) bool {return v1 == v2}
-// != (not equal)
-func ne(v1, v2 int) bool {return v1 != v2}
-// <= (less then or equal)
-func lte(v1, v2 int) bool {return v1 <= v2}
-// <
-func lt(v1, v2 int) bool {return v1 < v2}
-// >= (greater then or equal)
-func gte(v1, v2 int) bool {return v1 >= v2}
-// > (greater then)
-func gt(v1, v2 int) bool {return v1 > v2}
-
 /* compare <a> <operator> <b> and return bool result
 For example: ("4.0.0a", "<=", "4.0.0") = (400, "<=", 400) => true
 WARNING: Letters are also integers, starts with 1 */
 func CompareVersion(a, operator, b string) (bool, error) {
-	var compareFunc func(v1, v2 int) bool
 	v1, v2 := parseAndEquateVersions(a, b)
-
-	switch operator {
-	case "==":compareFunc = eq
-	case "!=":compareFunc = ne
-	case "<=":compareFunc = lte
-	case "<":compareFunc = lt
-	case ">=":compareFunc = gte
-	case ">":compareFunc = gt
-	default:return false, errors.New("Invalid operator: " + operator)
-	}
-
-	return compareFunc(v1, v2), nil
+	return compare(v1, v2, operator)
 }
 
 // Split name, operator and version. Returns [][]string{operator, version} if operator was split successful

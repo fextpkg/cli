@@ -12,8 +12,7 @@ func findOptimalPackageMetaDir(pkgName, libDir string) (string, error) {
 	dirs := utils.GetAllPackageDirs(pkgName, libDir)
 
 	var optimalDir string
-	// since we use a sorted list, we remove the unnecessary folder with the source code
-	for _, dir := range dirs[1:] {
+	for _, dir := range dirs {
 		optimalDir = dir
 
 		if utils.ParseFormat(dir) == FORMAT_WHEEL {
@@ -72,7 +71,13 @@ func loadWheelDependencies(path string) []string {
 		s := strings.SplitN(v, ": ", 2) // [key, value]
 		if s[0] == "Requires-Dist" {
 			findKey = true
-			dependencies = append(dependencies, s[1])
+			s = strings.Split(s[1], " ; ")
+			if len(s) > 1 { // check if contains expression
+				if ok, _ := utils.CompareExpression(s[1], path); !ok {
+					continue
+				}
+			}
+			dependencies = append(dependencies, s[0])
 		} else if findKey || s[0] == "Provides-Extra" {
 			break
 		}

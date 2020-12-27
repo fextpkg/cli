@@ -123,12 +123,12 @@ func GetAllPackageDirs(pkgName, libDir string) []string {
 			if findPrefix {
 				break
 			}
-		} else {
+		} else if dir.IsDir() {
 			findPrefix = true
 			dirs = append(dirs, dirName)
 		}
 	}
-	
+
 	return dirs
 }
 
