@@ -32,7 +32,7 @@ func (pkg *Package) DefaultInstall(offset int) (string, string, []string, error)
 		pkgName: pkg.Name,
 		maxMessageLength: base_cfg.MAX_MESSAGE_LENGTH + len(pkg.Name),
 	})
-
+	utils.ClearLastMessage(base_cfg.MAX_MESSAGE_LENGTH + len(pkg.Name))
 	if err != nil {
 		return nameWithOffset, "", nil, err
 	}
@@ -42,7 +42,7 @@ func (pkg *Package) DefaultInstall(offset int) (string, string, []string, error)
 
 // Returns version, dependencies
 func (pkg *Package) install(buffer interface{Write([]byte) (int, error)
-	UpdateTotal(int)}) (string, []string, error) {
+UpdateTotal(int)}) (string, []string, error) {
 	doc, err := getPackageList(pkg.Name)
 	if err != nil {
 		return "", nil, err
@@ -72,7 +72,6 @@ func (pkg *Package) install(buffer interface{Write([]byte) (int, error)
 		return "", nil, err
 	}
 
-	utils.ClearLastMessage(base_cfg.MAX_MESSAGE_LENGTH + len(pkg.Name))
 
 	p, err := whl.LoadPackage(pkg.Name, pkg.LibDir)
 	if err != nil {
