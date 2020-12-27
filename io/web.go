@@ -48,6 +48,7 @@ func downloadPackage(buffer interface {
 	if err != nil {
 		return "", err
 	}
+	defer tmpFile.Close()
 
 	buffer.UpdateTotal(int(resp.ContentLength))
 

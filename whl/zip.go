@@ -19,15 +19,15 @@ func unzip(path string) error {
 		fpath := filepath.Join(path, f.Name)
 
 		if f.FileInfo().IsDir() {
-			err := os.MkdirAll(fpath, 0666)
+			err := os.MkdirAll(fpath, os.ModePerm)
 			if err != nil {
 				return err
 			}
 		} else {
-			if err := os.MkdirAll(filepath.Dir(fpath), 0666); err != nil {
+			if err := os.MkdirAll(filepath.Dir(fpath), os.ModePerm); err != nil {
 				return err
 			} else {
-				outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+				outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 				if err != nil {
 					return err
 				}
