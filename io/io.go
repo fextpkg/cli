@@ -1,9 +1,10 @@
 package io
 
 import (
+	"github.com/Flacy/upip/utils"
+
 	"fmt"
 	"os"
-	"upip/utils"
 )
 
 type Buffer struct {

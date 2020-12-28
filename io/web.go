@@ -1,14 +1,15 @@
 package io
 
 import (
+	"github.com/Flacy/upip/base_cfg"
+	"github.com/Flacy/upip/utils"
+
 	"errors"
 	"io"
 	"net/http"
 	"os"
 	"strings"
-	"upip/base_cfg"
-	"upip/utils"
-	
+
 	"golang.org/x/net/html"
 )
 

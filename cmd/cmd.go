@@ -1,12 +1,13 @@
 package cmd
 
 import (
+	"github.com/Flacy/upip/help"
+	"github.com/Flacy/upip/io"
+	"github.com/Flacy/upip/utils"
+
 	"fmt"
 	"io/ioutil"
 	"strings"
-	"upip/help"
-	"upip/io"
-	"upip/utils"
 )
 
 func Install(libDir string, args []string) {

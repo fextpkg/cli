@@ -1,14 +1,15 @@
 package io
 
 import (
+	"github.com/Flacy/upip/base_cfg"
+	"github.com/Flacy/upip/color"
+	"github.com/Flacy/upip/utils"
+	"github.com/Flacy/upip/whl"
+
 	"errors"
 	"fmt"
 	"os"
 	"strings"
-	"upip/base_cfg"
-	"upip/color"
-	"upip/utils"
-	"upip/whl"
 )
 
 type Package struct {

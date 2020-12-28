@@ -1,8 +1,9 @@
 package help
 
 import (
+	"github.com/Flacy/upip/base_cfg"
+
 	"fmt"
-	"upip/base_cfg"
 )
 
 // print main help info

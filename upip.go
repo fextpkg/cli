@@ -1,12 +1,13 @@
 package main
 
 import (
+	"github.com/Flacy/upip/base_cfg"
+	"github.com/Flacy/upip/cmd"
+	"github.com/Flacy/upip/help"
+	"github.com/Flacy/upip/utils"
+
 	"fmt"
 	"os"
-	"upip/base_cfg"
-	"upip/cmd"
-	"upip/help"
-	"upip/utils"
 
 	"github.com/go-ini/ini"
 )

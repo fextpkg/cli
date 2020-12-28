@@ -1,10 +1,11 @@
 package whl
 
 import (
+	"github.com/Flacy/upip/utils"
+
 	"io/ioutil"
 	"os"
 	"strings"
-	"upip/utils"
 )
 
 // Find all package directories and select wheel (dist-info) if exists, otherwise select egg-info (legacy)
