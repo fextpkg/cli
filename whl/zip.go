@@ -1,6 +1,8 @@
 package whl
 
 import (
+	"github.com/Flacy/upip/base_cfg"
+
 	"archive/zip"
 	"io"
 	"os"
@@ -19,15 +21,15 @@ func unzip(path string) error {
 		fpath := filepath.Join(path, f.Name)
 
 		if f.FileInfo().IsDir() {
-			err := os.MkdirAll(fpath, os.ModePerm)
+			err := os.MkdirAll(fpath, base_cfg.DEFAULT_CHMOD)
 			if err != nil {
 				return err
 			}
 		} else {
-			if err := os.MkdirAll(filepath.Dir(fpath), os.ModePerm); err != nil {
+			if err := os.MkdirAll(filepath.Dir(fpath), base_cfg.DEFAULT_CHMOD); err != nil {
 				return err
 			} else {
-				outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+				outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, base_cfg.DEFAULT_CHMOD)
 				if err != nil {
 					return err
 				}
