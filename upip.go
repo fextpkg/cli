@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
-	"upip/base_cfg"
-	"upip/cmd"
-	"upip/help"
-	"upip/utils"
+	"./base_cfg"
+	"./cmd"
+	"./help"
+	"./utils"
 
 	"github.com/go-ini/ini"
 )
