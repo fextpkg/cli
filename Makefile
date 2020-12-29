@@ -6,20 +6,20 @@ ifndef $(GOBIN)
 endif
 
 build:
-	go build -i upip.go
+	go build -i fext.go
 
 deps:
 	go get
 
 install:
 ifeq ($(OS),Windows_NT)
-	mv upip.exe "$(USERPROFILE)\\"
+	mv fext.exe "$(USERPROFILE)\\"
 else
 ifeq ($(shell uname),Linux)
-	mv upip ~/.local/bin/
+	mv fext ~/.local/bin/
 endif
 ifeq ($(shell uname),Darwin)
-	mv upip usr/local/bin/
+	mv fext usr/local/bin/
 endif
 endif
 
