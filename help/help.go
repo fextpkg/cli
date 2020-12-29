@@ -8,7 +8,7 @@ import (
 
 // print main help info
 func Show() {
-	fmt.Println("Usage:\n\tupip <command> [args]",
+	fmt.Println("Usage:\n\tfext <command> [args]",
 				"\n\nAvailable commands:\n",
 				"\t(i)nstall [options] <package(s)> - install a package(s)\n",
 				"\t(u)ninstall <package(s)> - uninstall a package(s)\n",
