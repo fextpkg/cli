@@ -1,8 +1,8 @@
 package io
 
 import (
-	"github.com/Flacy/upip/base_cfg"
-	"github.com/Flacy/upip/utils"
+	"github.com/Flacy/fext/base_cfg"
+	"github.com/Flacy/fext/utils"
 
 	"errors"
 	"io"

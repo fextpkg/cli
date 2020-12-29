@@ -1,10 +1,10 @@
 package io
 
 import (
-	"github.com/Flacy/upip/base_cfg"
-	"github.com/Flacy/upip/color"
-	"github.com/Flacy/upip/utils"
-	"github.com/Flacy/upip/whl"
+	"github.com/Flacy/fext/base_cfg"
+	"github.com/Flacy/fext/color"
+	"github.com/Flacy/fext/utils"
+	"github.com/Flacy/fext/whl"
 
 	"errors"
 	"fmt"

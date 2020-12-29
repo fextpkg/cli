@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"github.com/Flacy/upip/help"
-	"github.com/Flacy/upip/io"
-	"github.com/Flacy/upip/utils"
+	"github.com/Flacy/fext/help"
+	"github.com/Flacy/fext/io"
+	"github.com/Flacy/fext/utils"
 
 	"fmt"
 	"io/ioutil"

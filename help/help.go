@@ -1,7 +1,7 @@
 package help
 
 import (
-	"github.com/Flacy/upip/base_cfg"
+	"github.com/Flacy/fext/base_cfg"
 
 	"fmt"
 )
@@ -25,7 +25,7 @@ func ShowInstall() {
 
 // print debug info
 func ShowDebug(pathToConfig string, libDir string) {
-	fmt.Printf("Upgraded Python Indexing Package (%s)\n\nUsing config: %s\nLinked to: %s\n",
+	fmt.Printf("FEXT (%s)\n\nUsing config: %s\nLinked to: %s\n",
 				base_cfg.VERSION, pathToConfig, libDir)
 }
 

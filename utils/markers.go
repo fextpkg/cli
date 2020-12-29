@@ -18,7 +18,7 @@ func GetSysPlatform() string {
 	if OS == "windows" {
 		return "win32"
 	} else if OS == "linux" {
-		// Please NOTE! UPIP DOESN'T support python 2, respectively value "linux2" also
+		// Please NOTE! FEXT DOESN'T support python 2, respectively value "linux2" also
 		return "linux"
 	} else if OS == "darwin" {
 		return "darwin"

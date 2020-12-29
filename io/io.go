@@ -1,7 +1,7 @@
 package io
 
 import (
-	"github.com/Flacy/upip/utils"
+	"github.com/Flacy/fext/utils"
 
 	"fmt"
 	"os"

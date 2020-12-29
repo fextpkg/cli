@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/Flacy/upip/base_cfg"
-	"github.com/Flacy/upip/cmd"
-	"github.com/Flacy/upip/help"
-	"github.com/Flacy/upip/utils"
+	"github.com/Flacy/fext/base_cfg"
+	"github.com/Flacy/fext/cmd"
+	"github.com/Flacy/fext/help"
+	"github.com/Flacy/fext/utils"
 
 	"fmt"
 	"os"
