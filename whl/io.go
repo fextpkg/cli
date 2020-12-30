@@ -1,10 +1,11 @@
 package whl
 
 import (
+	"github.com/Flacy/fext/utils"
+
 	"io/ioutil"
 	"os"
 	"strings"
-	"upip/utils"
 )
 
 // Find all package directories and select wheel (dist-info) if exists, otherwise select egg-info (legacy)
@@ -20,10 +21,6 @@ func findOptimalPackageMetaDir(pkgName, libDir string) (string, error) {
 		}
 	}
 	return optimalDir, nil
-}
-
-func Find(dir, name string) (string, error) {
-	return findOptimalPackageMetaDir(dir, name)
 }
 
 func loadPackageContent(path, fileName string) (string, error) {

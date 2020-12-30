@@ -2,8 +2,9 @@ package io
 
 import (
 	"fmt"
-	"os"
-	"upip/utils"
+	"github.com/Flacy/fext/color"
+	"github.com/Flacy/fext/utils"
+	"github.com/Flacy/fext/whl"
 )
 
 type Buffer struct {
@@ -48,10 +49,47 @@ func CheckPackageExists(name, libDir string, operators [][]string) bool {
 	return false
 }
 
-func UninstallPackage(libDir, name string) {
-	dirs := utils.GetAllPackageDirs(name, libDir)
+// Returns count of removed packages and total removed size in MB
+func UninstallPackages(libDir string, packages []string, collectDependencies, inRecurse bool, ) (int, int, int64) {
+	var count, depCount int
+	var size int64
+	var dependencies []string
+	for _, pkgName := range packages {
+		pkg, err := whl.LoadPackage(pkgName, libDir)
+		if inRecurse {
+			// add offset for beauty print
+			pkgName = utils.GetOffsetString(1) + pkgName
+		}
+		if err != nil {
+			color.PrintflnStatusError("%s - Uninstall failed", err.Error(), pkgName)
+			continue
+		} else if collectDependencies {
+			dependencies = pkg.LoadDependencies()
+		}
 
-	for _, dir := range dirs {
-		os.RemoveAll(libDir + dir)
+		err = pkg.Uninstall(libDir)
+		if err != nil {
+			color.PrintflnStatusError("%s - Uninstall failed", err.Error(), pkgName)
+		} else {
+			color.PrintflnStatusOK("%s - Uninstalled", pkgName)
+			size += pkg.Size
+			count++
+		}
+
+		// we don't run the recursion, via collectDependencies arg,
+		// as this could lead to the removal most part of the packets
+		if len(dependencies) > 0 {
+			for i, dep := range dependencies {
+				// clean name
+				dependencies[i], _ = utils.SplitOperators(dep)
+			}
+			fmt.Println("-> Uninstalling dependencies")
+			c, _, s := UninstallPackages(libDir, dependencies, false, true)
+			depCount += c
+			size += s
+		}
+
 	}
+
+	return count, depCount, size
 }

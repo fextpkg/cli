@@ -91,10 +91,6 @@ func getBracketIndexes(s string) (int, int) {
 	return -1, -1
 }
 
-func Convert(s string) string {
-	return convertLettersToIntString(s)
-}
-
 func compareBool(a, b bool, operator string) (bool, error) {
 	if operator == "and" {
 		return and(a, b), nil

@@ -98,3 +98,7 @@ func ParseFormat(dir string) string {
 	return s[len(s) - 1]
 }
 
+func GetOffsetString(offset int) string {
+	return strings.Repeat(" ", offset * 4)
+}
+

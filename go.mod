@@ -1,4 +1,4 @@
-module github.com/Flacy/upip
+module github.com/Flacy/fext
 
 go 1.15
 

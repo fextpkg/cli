@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/Flacy/fext/help"
+	"github.com/Flacy/fext/io"
+	"github.com/Flacy/fext/utils"
 	"io/ioutil"
 	"strings"
-	"upip/help"
-	"upip/io"
-	"upip/utils"
 )
 
 func Install(libDir string, args []string) {
@@ -27,11 +27,23 @@ func Install(libDir string, args []string) {
 }
 
 func Uninstall(libDir string, args []string) {
-	for _, pkgName := range args {
-		io.UninstallPackage(libDir, pkgName)
+	options, offset := utils.ParseOptions(args)
+	var collectDependency bool
+
+	for _, option := range options {
+		switch option {
+		case "h", "help":
+			help.ShowUninstall()
+			return
+		case "w", "with-dependencies":
+			collectDependency = true
+		}
 	}
 
-	fmt.Println("ok")
+	packages := args[offset:]
+	count, depCount, size := io.UninstallPackages(libDir, packages, collectDependency, false)
+
+	fmt.Printf("\nRemoved %d packages and %d dependencies of a size %.2f MiB\n", count, depCount, float32(size / 1024) / 1024)
 }
 
 // show list of installed packages

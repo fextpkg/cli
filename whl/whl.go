@@ -2,6 +2,8 @@ package whl
 
 import (
 	"errors"
+	"github.com/Flacy/fext/utils"
+	"os"
 	"strings"
 )
 
@@ -12,6 +14,7 @@ const (
 
 type Package struct {
 	Name string
+	Size int64
 	dir string
 	Data *map[string]string
 	Format string
@@ -29,6 +32,7 @@ func LoadPackage(name, libDir string) (*Package, error) {
 	s := strings.Split(dir, ".")
 
 	p.Format = s[len(s) - 1]
+	p.Size = utils.GetDirSize(libDir + name)
 
 	return &p, nil
 }
@@ -58,4 +62,21 @@ func (p *Package) LoadDependencies() []string {
 	}
 
 	return loadFunc(p.dir)
+}
+
+func (p *Package) Uninstall(libDir string) error {
+	dirs := utils.GetAllPackageDirs(p.Name, libDir)
+
+	if len(dirs) == 0 {
+		return errors.New("Package not installed")
+	}
+
+	for _, dir := range dirs {
+		err := os.RemoveAll(libDir + dir)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

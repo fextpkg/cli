@@ -1,12 +1,13 @@
 package main
 
 import (
+	"github.com/Flacy/fext/base_cfg"
+	"github.com/Flacy/fext/cmd"
+	"github.com/Flacy/fext/help"
+	"github.com/Flacy/fext/utils"
+
 	"fmt"
 	"os"
-	"./base_cfg"
-	"./cmd"
-	"./help"
-	"./utils"
 
 	"github.com/go-ini/ini"
 )

@@ -1,14 +1,14 @@
 package io
 
 import (
+	"github.com/Flacy/fext/base_cfg"
+	"github.com/Flacy/fext/color"
+	"github.com/Flacy/fext/utils"
+	"github.com/Flacy/fext/whl"
+
 	"errors"
 	"fmt"
 	"os"
-	"strings"
-	"upip/base_cfg"
-	"upip/color"
-	"upip/utils"
-	"upip/whl"
 )
 
 type Package struct {
@@ -26,7 +26,7 @@ func (pkg *Package) Prepare() {
 func (pkg *Package) DefaultInstall(offset int) (string, string, []string, error) {
 	pkg.Prepare()
 
-	nameWithOffset := strings.Repeat(" ", offset*4) + pkg.Name // used for beauty print when dependency installed
+	nameWithOffset := utils.GetOffsetString(offset) + pkg.Name // used for beauty print when dependency installed
 	fmt.Printf("\r%s - Scanning package..", nameWithOffset)
 
 	maxMessageLength := base_cfg.MAX_MESSAGE_LENGTH + len(pkg.Name)
@@ -64,7 +64,10 @@ func (pkg *Package) install(buffer interface {
 	}
 
 	// uninstall all other versions of package
-	UninstallPackage(pkg.LibDir, pkg.Name)
+	_pkg, err := whl.LoadPackage(pkg.Name, pkg.LibDir)
+	if err == nil {
+		_pkg.Uninstall(pkg.LibDir)
+	}
 
 	filePath, err := downloadPackage(buffer, link, pkg.LibDir)
 	if err != nil {
@@ -104,7 +107,7 @@ func SingleThreadDownload(libDir string, packages []string, offset int) (int, in
 			color.PrintflnStatusOK("\r%s (%s) - Installed", pkgName, pkgVersion)
 
 			if len(dependencies) > 0 {
-				fmt.Println(strings.Repeat(" ", offset*4) + "-> Installing dependencies")
+				fmt.Println(utils.GetOffsetString(offset) + "-> Installing dependencies")
 				c, dc := SingleThreadDownload(libDir, dependencies, offset+1)
 				dependencyCount += c + dc
 			}

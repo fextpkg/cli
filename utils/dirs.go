@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -130,5 +131,19 @@ func GetAllPackageDirs(pkgName, libDir string) []string {
 	}
 
 	return dirs
+}
+
+// Count size of all files in directory and return bytes
+func GetDirSize(path string) int64 {
+	var size int64
+	_ = filepath.Walk(path, func(_ string, info os.FileInfo, _ error) error {
+		if info != nil && !info.IsDir() {
+			size += info.Size()
+		}
+
+		return nil
+	})
+
+	return size
 }
 
