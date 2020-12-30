@@ -23,7 +23,7 @@ func Install(libDir string, args []string) {
 	packages := args[offset:]
 	count, dependencyCount := io.SingleThreadDownload(libDir, packages, 0)
 
-	fmt.Printf("\nInstalled %d packages and %d dependensies\n", count, dependencyCount)
+	fmt.Printf("\nInstalled %d packages and %d dependencies\n", count, dependencyCount)
 }
 
 func Uninstall(libDir string, args []string) {
