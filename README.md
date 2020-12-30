@@ -4,7 +4,7 @@ This packet manager allows you to download packages more quickly and convenientl
 It works identically as [PIP](https://github.com/pypa/pip), but used wheel metadata as main format.
 
 ### Usage
-![usage](https://i.imgur.com/1gx4Arf.gif)
+![usage](https://i.imgur.com/Jl84M7x.gif)
 
 ### Okay how are the differences?
 + More, more, mooree faster..
