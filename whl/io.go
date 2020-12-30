@@ -23,10 +23,6 @@ func findOptimalPackageMetaDir(pkgName, libDir string) (string, error) {
 	return optimalDir, nil
 }
 
-func Find(dir, name string) (string, error) {
-	return findOptimalPackageMetaDir(dir, name)
-}
-
 func loadPackageContent(path, fileName string) (string, error) {
 	content, err := ioutil.ReadFile(path + string(os.PathSeparator) + fileName)
 	if err != nil {
