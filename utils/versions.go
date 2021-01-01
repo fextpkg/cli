@@ -85,11 +85,12 @@ func ClearVersion(version string) string {
 func ParseDirectoryName(dirName string) (string, string, string) {
 	// array [name, version, ...]
 	meta := strings.SplitN(dirName, "-", 3)
-	format := ParseFormat(dirName)
 
-	if len(meta) <= 3 {
-		meta[1] = ClearVersion(meta[1])
+	// avoid errors
+	if len(meta) >= 2 {
+		return meta[0], ClearVersion(meta[1]), ParseFormat(dirName)
+	} else {
+		return meta[0], "", ""
 	}
-	return meta[0], meta[1], format
 }
 

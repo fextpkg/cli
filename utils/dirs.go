@@ -91,17 +91,22 @@ func ParsePythonVersion(path string) string {
 	return v
 }
 
+// format name for correct search
+func FormatName(dirName string) string {
+	return strings.ToLower(strings.ReplaceAll(dirName, "-", "_"))
+}
+
 func GetFirstPackageMetaDir(libDir, pkgName string) string {
 	dirInfo, err := ioutil.ReadDir(libDir)
 	if err != nil {
 		return ""
 	}
-	pkgName = strings.ReplaceAll(pkgName, "-", "_")
+	pkgName = FormatName(pkgName)
 
 	for _, dir := range dirInfo {
-		dirName := dir.Name()
-		if strings.HasPrefix(dirName, pkgName + "-") {
-			return dirName
+		curPkgName, v, _ := ParseDirectoryName(dir.Name())
+		if FormatName(curPkgName) == pkgName && v != "" {
+			return dir.Name()
 		}
 	}
 
@@ -114,19 +119,19 @@ func GetAllPackageDirs(pkgName, libDir string) []string {
 	if err != nil {
 		return dirs
 	}
-	pkgName = strings.ReplaceAll(pkgName, "-", "_")
+	pkgName = FormatName(pkgName)
 
 	// first we check if we have found the right name, then we check if we have exceeded the boundaries
 	var findPrefix bool
 	for _, dir := range dirInfo {
-		dirName := dir.Name()
-		if !strings.HasPrefix(dirName, pkgName) {
+		curPkgName, _, _ := ParseDirectoryName(dir.Name())
+		if FormatName(curPkgName) != pkgName {
 			if findPrefix {
 				break
 			}
 		} else if dir.IsDir() {
 			findPrefix = true
-			dirs = append(dirs, dirName)
+			dirs = append(dirs, dir.Name())
 		}
 	}
 

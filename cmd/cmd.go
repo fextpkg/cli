@@ -62,11 +62,11 @@ func Freeze(path string) {
 
 		if strings.HasSuffix(name, "info") {
 			// array ["name", "1.0.0", "py3..."]
-			meta := strings.SplitN(name, "-", 3)
-			if meta[0] != lastPkgName {
-				lastPkgName = meta[0]
+			pkgName, v, _ := utils.ParseDirectoryName(name)
+			if pkgName != lastPkgName {
+				lastPkgName = pkgName
 
-				fmt.Printf("%s (%s)\n", lastPkgName, utils.ClearVersion(meta[1]))
+				fmt.Printf("%s (%s)\n", lastPkgName, utils.ClearVersion(v))
 				count++
 			}
 		}
