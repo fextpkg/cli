@@ -63,8 +63,8 @@ func SplitOperators(name string) (string, [][]string) {
 	var operators [][]string
 	// parse operators and split them. E.g. "name<=4.0.0 >=4.0.0" => [[<=, 4.0.0], [>=, 4.0.0]]
 	// NOTE: separator can be anything and it also may not exists
-	re, _ := regexp.Compile(`([<>!=]=?)([\d\w\.]+|\,+)`)
-	v := re.FindAllStringSubmatch(name, -1)
+	re, _ := regexp.Compile(`([<>!=]=?)([\d\w\.]+)`)
+	v := re.FindAllStringSubmatch(strings.ReplaceAll(name, " ", ""), -1)
 
 	for _, value := range v {
 		operators = append(operators, value[1:]) // [baseValue, operator, version]
