@@ -1,8 +1,8 @@
 package io
 
 import (
-	"github.com/Flacy/fext/src/base_cfg"
-	"github.com/Flacy/fext/src/utils"
+	"github.com/Flacy/fext/fext/base_cfg"
+	"github.com/Flacy/fext/fext/utils"
 
 	"errors"
 	"io"

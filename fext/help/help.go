@@ -1,7 +1,7 @@
 package help
 
 import (
-	"github.com/Flacy/fext/src/base_cfg"
+	"github.com/Flacy/fext/fext/base_cfg"
 
 	"fmt"
 )
