@@ -2,7 +2,7 @@ package whl
 
 import (
 	"errors"
-	"github.com/Flacy/fext/utils"
+	"github.com/Flacy/fext/src/utils"
 	"os"
 	"strings"
 )

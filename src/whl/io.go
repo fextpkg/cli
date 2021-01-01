@@ -1,7 +1,7 @@
 package whl
 
 import (
-	"github.com/Flacy/fext/utils"
+	"github.com/Flacy/fext/src/utils"
 
 	"io/ioutil"
 	"os"

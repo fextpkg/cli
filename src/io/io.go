@@ -2,9 +2,9 @@ package io
 
 import (
 	"fmt"
-	"github.com/Flacy/fext/color"
-	"github.com/Flacy/fext/utils"
-	"github.com/Flacy/fext/whl"
+	"github.com/Flacy/fext/src/color"
+	"github.com/Flacy/fext/src/utils"
+	"github.com/Flacy/fext/src/whl"
 )
 
 type Buffer struct {

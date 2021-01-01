@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/Flacy/fext/help"
-	"github.com/Flacy/fext/io"
-	"github.com/Flacy/fext/utils"
+	"github.com/Flacy/fext/src/help"
+	"github.com/Flacy/fext/src/io"
+	"github.com/Flacy/fext/src/utils"
 	"io/ioutil"
 	"strings"
 )
