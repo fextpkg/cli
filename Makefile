@@ -6,20 +6,20 @@ ifndef $(GOBIN)
 endif
 
 build:
-	go build -i fext.go
+	go build -i -o fext-bin ./fext/fext.go
 
 deps:
-	go get
+	go get ./fext
 
 install:
 ifeq ($(OS),Windows_NT)
-	mv fext.exe "$(USERPROFILE)\\"
+	mv fext-bin "$(USERPROFILE)\\fext"
 else
 ifeq ($(shell uname),Linux)
-	mv fext ~/.local/bin/
+	mv fext-bin ~/.local/bin/fext
 endif
 ifeq ($(shell uname),Darwin)
-	mv fext usr/local/bin/
+	mv fext-bin usr/local/bin/fext
 endif
 endif
 
