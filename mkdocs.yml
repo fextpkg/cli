@@ -1,0 +1,15 @@
+site_name: Fext
+nav:
+    - Home: index.md
+    - Features: features.md
+    - Installation: installation.md
+    - Usage: usage.md
+    - Commands:
+        - 'User commands': 'cmd/cli.md'
+        - 'Development commands': 'cmd/dev.md'
+    - Other:
+        - 'Changelog': 'changelog.md'
+theme: readthedocs
+markdown_extensions:
+    - toc:
+        permalink: "#"
