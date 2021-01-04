@@ -11,6 +11,10 @@ import (
 	"os"
 )
 
+type Options struct {
+	Single bool // without dependencies
+}
+
 type Package struct {
 	Name      string
 	LibDir    string
@@ -93,7 +97,7 @@ func setupPackage(pathToFile string) error {
 }
 
 // start single thread download files. Returns count downloaded packages and dependencies
-func SingleThreadDownload(libDir string, packages []string, offset int) (int, int) {
+func SingleThreadDownload(libDir string, packages []string, offset int, options *Options) (int, int) {
 	var count, dependencyCount int
 
 	for _, name := range packages {
@@ -106,9 +110,9 @@ func SingleThreadDownload(libDir string, packages []string, offset int) (int, in
 			count++
 			color.PrintflnStatusOK("\r%s (%s) - Installed", pkgName, pkgVersion)
 
-			if len(dependencies) > 0 {
+			if !options.Single && len(dependencies) > 0 {
 				fmt.Println(utils.GetOffsetString(offset) + "-> Installing dependencies")
-				c, dc := SingleThreadDownload(libDir, dependencies, offset+1)
+				c, dc := SingleThreadDownload(libDir, dependencies, offset+1, options)
 				dependencyCount += c + dc
 			}
 		}

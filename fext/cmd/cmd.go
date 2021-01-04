@@ -11,17 +11,20 @@ import (
 
 func Install(libDir string, args []string) {
 	options, offset := utils.ParseOptions(args)
+	opt := io.Options{}
 
 	for _, option := range options {
 		switch option {
 		case "h", "help":
 			help.ShowInstall()
 			return
+		case "s", "single":
+			opt.Single = true
 		}
 	}
 
 	packages := args[offset:]
-	count, dependencyCount := io.SingleThreadDownload(libDir, packages, 0)
+	count, dependencyCount := io.SingleThreadDownload(libDir, packages, 0, &opt)
 
 	fmt.Printf("\nInstalled %d packages and %d dependencies\n", count, dependencyCount)
 }
