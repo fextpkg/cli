@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"github.com/Flacy/fext/utils"
+	"github.com/Flacy/fext/fext/color"
 )
 
 func main() {
-	size := utils.GetDirSize("/usr/lib/python3.8/site-packages/requests")
-	fmt.Println(size / 1024)
+	color.PrintfOK("all correct\n")
+	color.PrintfWarning("something target warning..\n")
+	color.PrintfError("something raise error\n")
 }

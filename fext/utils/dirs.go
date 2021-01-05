@@ -2,6 +2,8 @@ package utils
 
 import (
 	"fmt"
+	"github.com/Flacy/fext/fext/base_cfg"
+	"github.com/Flacy/fext/fext/color"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -45,6 +47,20 @@ func getPythonDirectory(baseDir, prefix string) string {
 	return SelectOneDirectory(baseDir, versions)
 }
 
+// function checks if directory "site-packages" exists, and if it does not, it creates
+func createSitePackagesDir(dir string) {
+	if _, err := os.Stat(dir); err != nil {
+		if os.IsNotExist(err) {
+			color.PrintfWarning("site-packages directory not detected. Creating..\n")
+			if err = os.MkdirAll(dir, base_cfg.DEFAULT_CHMOD); err != nil {
+				color.PrintfError("Can't create \"site-packages\" directory. Please create it manually, otherwise you will get an error\n")
+			}
+		} else {
+			color.PrintfError("Can't check exists of the \"site-packages\" directory: %s\n", err.Error())
+		}
+	}
+}
+
 func GetPythonBinDirectory(version string) string {
 	// TODO add venv support
 	if OS == "windows" {
@@ -59,21 +75,25 @@ func GetPythonBinDirectory(version string) string {
 }
 
 // select one dir without version
-func FindPythonLibDirectory() string {
+func GetPythonLibDirectory() string {
+	var path string
 	if OS == "windows" {
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
 			panic(err)
 		}
 
-		return getPythonDirectory(homeDir + "\\AppData\\Local\\Programs\\Python\\", "Python") + "\\Lib\\site-packages"
+		path = getPythonDirectory(homeDir + "\\AppData\\Local\\Programs\\Python\\", "Python") + "\\Lib\\site-packages"
 	} else if OS == "linux" {
-		return getPythonDirectory("/usr/lib/", "python") + "/site-packages"
+		path = getPythonDirectory("/usr/lib/", "python") + "/site-packages"
 	} else if OS == "darwin" { // mac os
-		return getPythonDirectory("/usr/local/lib/", "python") + "/site-packages"
+		path = getPythonDirectory("/usr/local/lib/", "python") + "/site-packages"
+	} else {
+		panic("Unsupported OS\n")
 	}
 
-	panic("Unsupported OS\n")
+	createSitePackagesDir(path)
+	return path
 }
 
 func ParsePythonVersion(path string) string {

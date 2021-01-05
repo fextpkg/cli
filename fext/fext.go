@@ -52,7 +52,7 @@ func main() {
 
 		if libDirKey.String() == "" {
 			// init
-			libDirKey.SetValue(utils.FindPythonLibDirectory())
+			libDirKey.SetValue(utils.GetPythonLibDirectory())
 		}
 		// do it, cause on windows separator doesn't saves
 		libDir := libDirKey.Value() + string(os.PathSeparator)
