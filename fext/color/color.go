@@ -16,6 +16,7 @@ const (
 	// colors
 	RED = PREFIX_CODE + "31m"
 	GREEN = PREFIX_CODE + "32m"
+	ORANGE = PREFIX_CODE + "33m"
 
 	// effects
 	BOLD = PREFIX_CODE + "1m"
@@ -34,13 +35,18 @@ func getColoredString(startColor, text string) string {
 	return b.String()
 }
 
-func PrintfError(text string, args ...interface{}) (int, error) {
-	coloredString := getColoredString(RED + BOLD, fmt.Sprintf(text, args...))
+func PrintfOK(text string, args ...interface{}) (int, error) {
+	coloredString := getColoredString(GREEN + BOLD, fmt.Sprintf(text, args...))
 	return fmt.Print(coloredString)
 }
 
-func PrintfOK(text string, args ...interface{}) (int, error) {
-	coloredString := getColoredString(GREEN + BOLD, fmt.Sprintf(text, args...))
+func PrintfWarning(text string, args ...interface{}) (int, error) {
+	coloredString := getColoredString(ORANGE + BOLD, fmt.Sprintf("WARNING: " + text, args...))
+	return fmt.Print(coloredString)
+}
+
+func PrintfError(text string, args ...interface{}) (int, error) {
+	coloredString := getColoredString(RED + BOLD, fmt.Sprintf("ERROR: " + text, args...))
 	return fmt.Print(coloredString)
 }
 
