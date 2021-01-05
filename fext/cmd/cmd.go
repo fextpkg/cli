@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/Flacy/fext/fext/color"
 	"github.com/Flacy/fext/fext/help"
 	"github.com/Flacy/fext/fext/io"
 	"github.com/Flacy/fext/fext/utils"
 	"io/ioutil"
+	"os"
 	"strings"
 )
 
@@ -46,7 +48,7 @@ func Uninstall(libDir string, args []string) {
 	packages := args[offset:]
 	count, depCount, size := io.UninstallPackages(libDir, packages, collectDependency, false)
 
-	fmt.Printf("\nRemoved %d packages and %d dependencies of a size %.2f MiB\n", count, depCount, float32(size / 1024) / 1024)
+	fmt.Printf("\nRemoved %d packages and %d dependencies of a size %.2f MB\n", count, depCount, float32(size / 1024) / 1024)
 }
 
 // show list of installed packages
@@ -54,26 +56,28 @@ func Freeze(path string) {
 	packages, err := ioutil.ReadDir(path)
 
 	if err != nil {
-		// TODO maybe create path or notify
+		color.PrintfError("%s", err.Error())
+		os.Exit(1)
 	}
 
-	count := 0
-	lastPkgName := ""
+	var count int
+	var size int64
+	var lastPkgName string
 	// using sorted array of packages. We check each element and check if this element repeat, don't print them
 	for _, pkg := range packages {
 		name := pkg.Name()
 
 		if strings.HasSuffix(name, "info") {
-			// array ["name", "1.0.0", "py3..."]
 			pkgName, v, _ := utils.ParseDirectoryName(name)
 			if pkgName != lastPkgName {
 				lastPkgName = pkgName
 
 				fmt.Printf("%s (%s)\n", lastPkgName, utils.ClearVersion(v))
 				count++
+				size += utils.GetDirSize(path + pkgName)
 			}
 		}
 	}
 
-	fmt.Printf("\nTotal: %d\n", count)
+	fmt.Printf("\nTotal: %d (%.2f MB)\n", count, float32(size / 1024) / 1024)
 }
