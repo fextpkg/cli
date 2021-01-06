@@ -42,7 +42,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		} else {
-			configDir += string(os.PathSeparator)
+			configDir += base_cfg.PATH_SEPARATOR
 		}
 
 		command := args[0]
@@ -55,7 +55,7 @@ func main() {
 			libDirKey.SetValue(utils.GetPythonLibDirectory())
 		}
 		// do it, cause on windows separator doesn't saves
-		libDir := libDirKey.Value() + string(os.PathSeparator)
+		libDir := libDirKey.Value() + base_cfg.PATH_SEPARATOR
 
 		switch command {
 		case "install", "i":

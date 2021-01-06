@@ -1,11 +1,13 @@
 package main
 
 import (
-	"github.com/Flacy/fext/fext/color"
+	"fmt"
+	"os"
 )
 
 func main() {
-	color.PrintfOK("all correct\n")
-	color.PrintfWarning("something target warning..\n")
-	color.PrintfError("something raise error\n")
+	file, _ := os.Open("C:\\Users\\hz\\AppData\\Local\\Programs\\Python\\Python39\\Lib\\site-packages\\")
+	defer file.Close()
+	names, _ := file.Readdirnames(0)
+	fmt.Println(names)
 }

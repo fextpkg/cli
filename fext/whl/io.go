@@ -1,10 +1,10 @@
 package whl
 
 import (
+	"github.com/Flacy/fext/fext/base_cfg"
 	"github.com/Flacy/fext/fext/utils"
 
 	"io/ioutil"
-	"os"
 	"strings"
 )
 
@@ -24,7 +24,7 @@ func findOptimalPackageMetaDir(pkgName, libDir string) (string, error) {
 }
 
 func loadPackageContent(path, fileName string) (string, error) {
-	content, err := ioutil.ReadFile(path + string(os.PathSeparator) + fileName)
+	content, err := ioutil.ReadFile(path + base_cfg.PATH_SEPARATOR + fileName)
 	if err != nil {
 		return "", err
 	}

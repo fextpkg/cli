@@ -2,8 +2,10 @@ package whl
 
 import (
 	"errors"
+	"github.com/Flacy/fext/fext/base_cfg"
 	"github.com/Flacy/fext/fext/utils"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -13,11 +15,10 @@ const (
 )
 
 type Package struct {
-	Name string
-	Size int64
-	dir string
-	Data *map[string]string
-	Format string
+	Name    string
+	metaDir string
+	Data    *map[string]string
+	Format  string
 }
 
 func LoadPackage(name, libDir string) (*Package, error) {
@@ -28,11 +29,10 @@ func LoadPackage(name, libDir string) (*Package, error) {
 		return nil, errors.New("Package info not found")
 	}
 
-	p := Package{Name: name, dir: libDir + dir}
+	p := Package{Name: name, metaDir: libDir + dir}
 	s := strings.Split(dir, ".")
 
 	p.Format = s[len(s) - 1]
-	p.Size = utils.GetDirSize(libDir + name)
 
 	return &p, nil
 }
@@ -44,7 +44,7 @@ func (p *Package) LoadMetaData(libDir string) error {
 		loadFunc = loadWheelMeta
 	}
 
-	data, err := loadFunc(p.dir)
+	data, err := loadFunc(p.metaDir)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (p *Package) LoadDependencies() []string {
 		loadFunc = loadEggDependencies
 	}
 
-	return loadFunc(p.dir)
+	return loadFunc(p.metaDir)
 }
 
 func (p *Package) Uninstall(libDir string) error {
@@ -79,4 +79,9 @@ func (p *Package) Uninstall(libDir string) error {
 	}
 
 	return nil
+}
+
+func (p *Package) GetSize() int64 {
+	// cut part with meta and append original name
+	return utils.GetDirSize(filepath.Dir(p.metaDir) + base_cfg.PATH_SEPARATOR + p.Name)
 }

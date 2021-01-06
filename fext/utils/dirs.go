@@ -135,23 +135,25 @@ func GetFirstPackageMetaDir(libDir, pkgName string) string {
 
 func GetAllPackageDirs(pkgName, libDir string) []string {
 	var dirs []string
-	dirInfo, err := ioutil.ReadDir(libDir)
+	dirInfo, err := os.Open(libDir)
 	if err != nil {
 		return dirs
 	}
+	defer dirInfo.Close()
+	pkgNames, _ := dirInfo.Readdirnames(0)
 	pkgName = FormatName(pkgName)
 
 	// first we check if we have found the right name, then we check if we have exceeded the boundaries
 	var findPrefix bool
-	for _, dir := range dirInfo {
-		curPkgName, _, _ := ParseDirectoryName(dir.Name())
+	for _, dirName := range pkgNames {
+		curPkgName, _, _ := ParseDirectoryName(dirName)
 		if FormatName(curPkgName) != pkgName {
 			if findPrefix {
 				break
 			}
-		} else if dir.IsDir() {
+		} else {
 			findPrefix = true
-			dirs = append(dirs, dir.Name())
+			dirs = append(dirs, dirName)
 		}
 	}
 
