@@ -52,7 +52,7 @@ func CheckPackageExists(name, libDir string, operators [][]string) bool {
 // Returns count of removed packages and total removed size in MB
 func UninstallPackages(libDir string, packages []string, collectDependencies, inRecurse bool, ) (int, int, int64) {
 	var count, depCount int
-	var size int64
+	var size, curSize int64
 	var dependencies []string
 	for _, pkgName := range packages {
 		pkg, err := whl.LoadPackage(pkgName, libDir)
@@ -67,7 +67,7 @@ func UninstallPackages(libDir string, packages []string, collectDependencies, in
 			dependencies = pkg.LoadDependencies()
 		}
 
-		curSize := pkg.GetSize()
+		curSize = pkg.GetSize()
 		err = pkg.Uninstall(libDir)
 		if err != nil {
 			color.PrintflnStatusError("%s - Uninstall failed", err.Error(), pkgName)
