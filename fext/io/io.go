@@ -67,13 +67,14 @@ func UninstallPackages(libDir string, packages []string, collectDependencies, in
 			dependencies = pkg.LoadDependencies()
 		}
 
-		size += pkg.GetSize()
+		curSize := pkg.GetSize()
 		err = pkg.Uninstall(libDir)
 		if err != nil {
 			color.PrintflnStatusError("%s - Uninstall failed", err.Error(), pkgName)
 		} else {
 			color.PrintflnStatusOK("%s - Uninstalled", pkgName)
 			count++
+			size += curSize
 		}
 
 		// we don't run the recursion, via collectDependencies arg,
