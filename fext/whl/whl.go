@@ -2,10 +2,9 @@ package whl
 
 import (
 	"errors"
-	"github.com/Flacy/fext/fext/base_cfg"
+	"github.com/Flacy/fext/fext/cfg"
 	"github.com/Flacy/fext/fext/utils"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -21,15 +20,15 @@ type Package struct {
 	Format  string
 }
 
-func LoadPackage(name, libDir string) (*Package, error) {
-	dir, err := findOptimalPackageMetaDir(name, libDir)
+func LoadPackage(name string) (*Package, error) {
+	dir, err := findOptimalPackageMetaDir(name)
 	if err != nil {
 		return nil, err
 	} else if dir == "" {
 		return nil, errors.New("Package info not found")
 	}
 
-	p := Package{Name: name, metaDir: libDir + dir}
+	p := Package{Name: name, metaDir: dir}
 	s := strings.Split(dir, ".")
 
 	p.Format = s[len(s) - 1]
@@ -41,7 +40,7 @@ func LoadPackage(name, libDir string) (*Package, error) {
 func (p *Package) LoadMetaData(libDir string) error {
 	var loadFunc func(string) (*map[string]string, error)
 	if p.Format == FORMAT_WHEEL {
-		loadFunc = loadWheelMeta
+		loadFunc = loadMeta
 	}
 
 	data, err := loadFunc(p.metaDir)
@@ -53,26 +52,15 @@ func (p *Package) LoadMetaData(libDir string) error {
 	return nil
 }
 
-func (p *Package) LoadDependencies() []string {
-	var loadFunc func(string) []string
-	if p.Format == FORMAT_WHEEL {
-		loadFunc = loadWheelDependencies
-	} else if p.Format == FORMAT_EGG {
-		loadFunc = loadEggDependencies
-	}
-
-	return loadFunc(p.metaDir)
-}
-
-func (p *Package) Uninstall(libDir string) error {
-	dirs := utils.GetAllPackageDirs(p.Name, libDir)
+func (p *Package) Uninstall() error {
+	dirs := utils.GetAllPackageDirs(p.Name)
 
 	if len(dirs) == 0 {
 		return errors.New("Package not installed")
 	}
 
 	for _, dir := range dirs {
-		err := os.RemoveAll(libDir + dir)
+		err := os.RemoveAll(cfg.PathToLib + dir)
 		if err != nil {
 			return err
 		}
@@ -81,7 +69,23 @@ func (p *Package) Uninstall(libDir string) error {
 	return nil
 }
 
+// Parse dependencies of wheel metadata. Returns error if package have unsupported format
+func (p *Package) GetDependencies() ([]string, error) {
+	if p.Format == FORMAT_WHEEL {
+		return loadDependencies(p.metaDir)
+	} else {
+		return nil, errors.New("Unsupported format: " + p.Format)
+	}
+}
+
+// Get extra packages. Returns error if extra name doesn't exists, or another parse error
+func (p Package) GetExtra(name string) ([]string, error) {
+	// TODO
+	return nil, nil
+}
+
+// Calculate all size of files in directory with source code. Returns size in bytes
 func (p *Package) GetSize() int64 {
-	// cut part with meta and append original name
-	return utils.GetDirSize(filepath.Dir(p.metaDir) + base_cfg.PATH_SEPARATOR + p.Name)
+	// TODO check workable
+	return utils.GetDirSize(strings.SplitN(p.metaDir, "-", 2)[0])
 }

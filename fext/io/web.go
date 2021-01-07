@@ -1,7 +1,7 @@
 package io
 
 import (
-	"github.com/Flacy/fext/fext/base_cfg"
+	"github.com/Flacy/fext/fext/cfg"
 	"github.com/Flacy/fext/fext/utils"
 
 	"errors"
@@ -14,7 +14,7 @@ import (
 )
 
 func getPackageList(name string) (*html.Node, error) {
-	resp, err := http.Get(base_cfg.BASE_PACKAGE_URL + name + "/")
+	resp, err := http.Get(cfg.BASE_PACKAGE_URL + name + "/")
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func downloadPackage(buffer interface {
 	Write([]byte) (int, error)
 	UpdateTotal(int)
 },
-	link, libDir string) (string, error) {
+	link string) (string, error) {
 	hashSum := strings.Split(link, "sha256=")[1]
 
 	resp, err := http.Get(link)
@@ -45,7 +45,7 @@ func downloadPackage(buffer interface {
 	}
 	defer resp.Body.Close()
 
-	tmpFile, err := os.Create(libDir + hashSum + ".tmp")
+	tmpFile, err := os.Create(cfg.PathToLib + hashSum + ".tmp")
 	if err != nil {
 		return "", err
 	}
@@ -62,7 +62,7 @@ func downloadPackage(buffer interface {
 }
 
 // Parse document and select optimal version. Returns package version, link to download
-func selectCorrectPackageVersion(doc *html.Node, op [][]string, pythonV string) (string, string, error) {
+func selectCorrectPackageVersion(doc *html.Node, op [][]string) (string, string, error) {
 	// html => body (on pypi)
 	startNode := doc.FirstChild.NextSibling.FirstChild.NextSibling.NextSibling.LastChild
 	var fullData string
@@ -110,7 +110,7 @@ func selectCorrectPackageVersion(doc *html.Node, op [][]string, pythonV string) 
 
 		for _, classifier := range versionClassifiers {
 			_, op := utils.SplitOperators(classifier)
-			if ok, err := utils.CompareVersion(pythonV, op[0][0], op[0][1]); !ok {
+			if ok, err := utils.CompareVersion(cfg.PythonVersion, op[0][0], op[0][1]); !ok {
 				continue
 			} else if err != nil {
 				return "", "", err

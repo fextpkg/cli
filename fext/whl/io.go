@@ -1,7 +1,7 @@
 package whl
 
 import (
-	"github.com/Flacy/fext/fext/base_cfg"
+	"github.com/Flacy/fext/fext/cfg"
 	"github.com/Flacy/fext/fext/utils"
 
 	"io/ioutil"
@@ -9,8 +9,8 @@ import (
 )
 
 // Find all package directories and select wheel (dist-info) if exists, otherwise select egg-info (legacy)
-func findOptimalPackageMetaDir(pkgName, libDir string) (string, error) {
-	dirs := utils.GetAllPackageDirs(pkgName, libDir)
+func findOptimalPackageMetaDir(pkgName string) (string, error) {
+	dirs := utils.GetAllPackageDirs(pkgName)
 
 	var optimalDir string
 	for _, dir := range dirs {
@@ -23,8 +23,8 @@ func findOptimalPackageMetaDir(pkgName, libDir string) (string, error) {
 	return optimalDir, nil
 }
 
-func loadPackageContent(path, fileName string) (string, error) {
-	content, err := ioutil.ReadFile(path + base_cfg.PATH_SEPARATOR + fileName)
+func loadPackageContent(dir, fileName string) (string, error) {
+	content, err := ioutil.ReadFile(cfg.PathToLib + dir + cfg.PATH_SEPARATOR + fileName)
 	if err != nil {
 		return "", err
 	}
@@ -33,20 +33,20 @@ func loadPackageContent(path, fileName string) (string, error) {
 }
 
 // split description and meta, then drop part with description
-func splitWheelMeta(rawContent string) []string {
+func splitMeta(rawContent string) []string {
 	rawContent = strings.SplitN(rawContent, "\n\n", 2)[0]
 	return strings.Split(rawContent, "\n")
 }
 
 // load and parse wheel package info
-func loadWheelMeta(path string) (*map[string]string, error) {
+func loadMeta(dir string) (*map[string]string, error) {
 	pkgInfo := map[string]string{}
-	rawContent, err := loadPackageContent(path, "METADATA")
+	rawContent, err := loadPackageContent(dir, "METADATA")
 	if err != nil {
 		return &pkgInfo, err
 	}
 
-	for _, v := range splitWheelMeta(rawContent) {
+	for _, v := range splitMeta(rawContent) {
 		s := strings.SplitN(v, ": ", 2)
 		pkgInfo[s[0]] = s[1] // key = value
 	}
@@ -55,22 +55,21 @@ func loadWheelMeta(path string) (*map[string]string, error) {
 	return &pkgInfo, nil
 }
 
-func loadWheelDependencies(path string) []string {
-	// TODO compare sys_platform and python_version
+func loadDependencies(dir string) ([]string, error) {
 	var dependencies []string
-	rawContent, err := loadPackageContent(path, "METADATA")
+	rawContent, err := loadPackageContent(dir, "METADATA")
 	if err != nil {
-		return dependencies
+		return nil, err
 	}
 
 	var findKey bool
-	for _, v := range splitWheelMeta(rawContent) {
+	for _, v := range splitMeta(rawContent) {
 		s := strings.SplitN(v, ": ", 2) // [key, value]
 		if s[0] == "Requires-Dist" {
 			findKey = true
 			s = strings.Split(s[1], " ; ")
 			if len(s) > 1 { // check if contains expression
-				if ok, _ := utils.CompareExpression(s[1], path); !ok {
+				if ok, _ := utils.CompareExpression(s[1], dir); !ok {
 					continue
 				}
 			}
@@ -80,6 +79,6 @@ func loadWheelDependencies(path string) []string {
 		}
 	}
 
-	return dependencies
+	return dependencies, nil
 }
 

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/Flacy/fext/fext/cfg"
 	"github.com/Flacy/fext/fext/color"
 	"github.com/Flacy/fext/fext/help"
 	"github.com/Flacy/fext/fext/io"
@@ -11,7 +12,7 @@ import (
 	"strings"
 )
 
-func Install(libDir string, args []string) {
+func Install(args []string) {
 	options, offset := utils.ParseOptions(args)
 	opt := io.Options{}
 
@@ -26,12 +27,12 @@ func Install(libDir string, args []string) {
 	}
 
 	packages := args[offset:]
-	count, dependencyCount := io.SingleThreadDownload(libDir, packages, 0, &opt)
+	count, dependencyCount := io.SingleThreadDownload(packages, 0, &opt)
 
 	fmt.Printf("\nInstalled %d packages and %d dependencies\n", count, dependencyCount)
 }
 
-func Uninstall(libDir string, args []string) {
+func Uninstall(args []string) {
 	options, offset := utils.ParseOptions(args)
 	var collectDependency bool
 
@@ -46,14 +47,14 @@ func Uninstall(libDir string, args []string) {
 	}
 
 	packages := args[offset:]
-	count, depCount, size := io.UninstallPackages(libDir, packages, collectDependency, false)
+	count, depCount, size := io.UninstallPackages(packages, collectDependency, false)
 
-	fmt.Printf("\nRemoved %d packages and %d dependencies of a size %.2f MB\n", count, depCount, float32(size / 1024) / 1024)
+	fmt.Printf("\nRemoved %d packages and %d dependencies (%.2f MB)\n", count, depCount, float32(size / 1024) / 1024)
 }
 
 // show list of installed packages
-func Freeze(path string) {
-	packages, err := ioutil.ReadDir(path)
+func Freeze() {
+	packages, err := ioutil.ReadDir(cfg.PathToLib)
 
 	if err != nil {
 		color.PrintfError("%s", err.Error())
@@ -74,7 +75,7 @@ func Freeze(path string) {
 
 				fmt.Printf("%s (%s)\n", lastPkgName, utils.ClearVersion(v))
 				count++
-				size += utils.GetDirSize(path + pkgName)
+				size += utils.GetDirSize(pkgName)
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 package io
 
 import (
-	"github.com/Flacy/fext/fext/base_cfg"
+	"github.com/Flacy/fext/fext/cfg"
 	"github.com/Flacy/fext/fext/color"
 	"github.com/Flacy/fext/fext/utils"
 	"github.com/Flacy/fext/fext/whl"
@@ -17,7 +17,6 @@ type Options struct {
 
 type Package struct {
 	Name      string
-	LibDir    string
 	Operators [][]string
 }
 
@@ -33,7 +32,7 @@ func (pkg *Package) DefaultInstall(offset int) (string, string, []string, error)
 	nameWithOffset := utils.GetOffsetString(offset) + pkg.Name // used for beauty print when dependency installed
 	fmt.Printf("\r%s - Scanning package..", nameWithOffset)
 
-	maxMessageLength := base_cfg.MAX_MESSAGE_LENGTH + len(pkg.Name)
+	maxMessageLength := cfg.MAX_MESSAGE_LENGTH + len(pkg.Name)
 	version, dependencies, err := pkg.install(&Buffer{
 		pkgName:          pkg.Name,
 		maxMessageLength: maxMessageLength,
@@ -57,23 +56,22 @@ func (pkg *Package) install(buffer interface {
 		return "", nil, err
 	}
 
-	pythonV := utils.ParsePythonVersion(pkg.LibDir)
-	pkgVersion, link, err := selectCorrectPackageVersion(doc, pkg.Operators, pythonV)
+	pkgVersion, link, err := selectCorrectPackageVersion(doc, pkg.Operators)
 	if err != nil {
 		return "", nil, err
 	}
 
-	if CheckPackageExists(pkg.Name, pkg.LibDir, [][]string{{"==", pkgVersion}}) {
+	if CheckPackageExists(pkg.Name, [][]string{{"==", pkgVersion}}) {
 		return "", nil, errors.New("Package already installed")
 	}
 
 	// uninstall all other versions of package
-	_pkg, err := whl.LoadPackage(pkg.Name, pkg.LibDir)
+	_pkg, err := whl.LoadPackage(pkg.Name)
 	if err == nil {
-		_pkg.Uninstall(pkg.LibDir)
+		_pkg.Uninstall()
 	}
 
-	filePath, err := downloadPackage(buffer, link, pkg.LibDir)
+	filePath, err := downloadPackage(buffer, link)
 	if err != nil {
 		return "", nil, err
 	}
@@ -84,12 +82,16 @@ func (pkg *Package) install(buffer interface {
 		return "", nil, err
 	}
 
-	p, err := whl.LoadPackage(pkg.Name, pkg.LibDir)
+	p, err := whl.LoadPackage(pkg.Name)
+	if err != nil {
+		return "", nil, err
+	}
+	dependencies, err := p.GetDependencies()
 	if err != nil {
 		return "", nil, err
 	}
 
-	return pkgVersion, p.LoadDependencies(), nil
+	return pkgVersion, dependencies, nil
 }
 
 func setupPackage(pathToFile string) error {
@@ -97,11 +99,11 @@ func setupPackage(pathToFile string) error {
 }
 
 // start single thread download files. Returns count downloaded packages and dependencies
-func SingleThreadDownload(libDir string, packages []string, offset int, options *Options) (int, int) {
+func SingleThreadDownload(packages []string, offset int, options *Options) (int, int) {
 	var count, dependencyCount int
 
 	for _, name := range packages {
-		pkg := Package{Name: name, LibDir: libDir}
+		pkg := Package{Name: name}
 		pkgName, pkgVersion, dependencies, err := pkg.DefaultInstall(offset)
 
 		if err != nil {
@@ -112,7 +114,7 @@ func SingleThreadDownload(libDir string, packages []string, offset int, options 
 
 			if !options.Single && len(dependencies) > 0 {
 				fmt.Println(utils.GetOffsetString(offset) + "-> Installing dependencies")
-				c, dc := SingleThreadDownload(libDir, dependencies, offset+1, options)
+				c, dc := SingleThreadDownload(dependencies, offset+1, options)
 				dependencyCount += c + dc
 			}
 		}

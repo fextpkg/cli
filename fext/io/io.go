@@ -33,8 +33,8 @@ func (b *Buffer) UpdateTotal(value int) {
 	b.Total = value / 1024
 }
 
-func CheckPackageExists(name, libDir string, operators [][]string) bool {
-	dirName := utils.GetFirstPackageMetaDir(libDir, name)
+func CheckPackageExists(name string, operators [][]string) bool {
+	dirName := utils.GetFirstPackageMetaDir(name)
 
 	if dirName != "" {
 		_, version, _ := utils.ParseDirectoryName(dirName)
@@ -50,12 +50,12 @@ func CheckPackageExists(name, libDir string, operators [][]string) bool {
 }
 
 // Returns count of removed packages and total removed size in MB
-func UninstallPackages(libDir string, packages []string, collectDependencies, inRecurse bool, ) (int, int, int64) {
+func UninstallPackages(packages []string, collectDependencies, inRecurse bool) (int, int, int64) {
 	var count, depCount int
 	var size, curSize int64
 	var dependencies []string
 	for _, pkgName := range packages {
-		pkg, err := whl.LoadPackage(pkgName, libDir)
+		pkg, err := whl.LoadPackage(pkgName)
 		if inRecurse {
 			// add offset for beauty print
 			pkgName = utils.GetOffsetString(1) + pkgName
@@ -64,11 +64,14 @@ func UninstallPackages(libDir string, packages []string, collectDependencies, in
 			color.PrintflnStatusError("%s - Uninstall failed", err.Error(), pkgName)
 			continue
 		} else if collectDependencies {
-			dependencies = pkg.LoadDependencies()
+			dependencies, err = pkg.GetDependencies()
+			if err != nil {
+				color.PrintfWarning("Unable to parse dependencies (%s). Skipping..\n", err.Error())
+			}
 		}
 
 		curSize = pkg.GetSize()
-		err = pkg.Uninstall(libDir)
+		err = pkg.Uninstall()
 		if err != nil {
 			color.PrintflnStatusError("%s - Uninstall failed", err.Error(), pkgName)
 		} else {
@@ -85,7 +88,7 @@ func UninstallPackages(libDir string, packages []string, collectDependencies, in
 				dependencies[i], _ = utils.SplitOperators(dep)
 			}
 			fmt.Println("-> Uninstalling dependencies")
-			c, _, s := UninstallPackages(libDir, dependencies, false, true)
+			c, _, s := UninstallPackages(dependencies, false, true)
 			depCount += c
 			size += s
 		}

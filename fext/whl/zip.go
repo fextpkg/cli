@@ -1,7 +1,7 @@
 package whl
 
 import (
-	"github.com/Flacy/fext/fext/base_cfg"
+	"github.com/Flacy/fext/fext/cfg"
 
 	"archive/zip"
 	"io"
@@ -21,15 +21,15 @@ func unzip(path string) error {
 		fpath := filepath.Join(path, f.Name)
 
 		if f.FileInfo().IsDir() {
-			err := os.MkdirAll(fpath, base_cfg.DEFAULT_CHMOD)
+			err := os.MkdirAll(fpath, cfg.DEFAULT_CHMOD)
 			if err != nil {
 				return err
 			}
 		} else {
-			if err := os.MkdirAll(filepath.Dir(fpath), base_cfg.DEFAULT_CHMOD); err != nil {
+			if err := os.MkdirAll(filepath.Dir(fpath), cfg.DEFAULT_CHMOD); err != nil {
 				return err
 			} else {
-				outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, base_cfg.DEFAULT_CHMOD)
+				outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, cfg.DEFAULT_CHMOD)
 				if err != nil {
 					return err
 				}

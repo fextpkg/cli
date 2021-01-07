@@ -2,7 +2,7 @@ package utils
 
 import (
 	"fmt"
-	"github.com/Flacy/fext/fext/base_cfg"
+	"github.com/Flacy/fext/fext/cfg"
 	"github.com/Flacy/fext/fext/color"
 	"io/ioutil"
 	"os"
@@ -48,11 +48,11 @@ func getPythonDirectory(baseDir, prefix string) string {
 }
 
 // function checks if directory "site-packages" exists, and if it does not, it creates
-func createSitePackagesDir(dir string) {
-	if _, err := os.Stat(dir); err != nil {
+func createSitePackagesDir(path string) {
+	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
 			color.PrintfWarning("site-packages directory not detected. Creating..\n")
-			if err = os.MkdirAll(dir, base_cfg.DEFAULT_CHMOD); err != nil {
+			if err = os.MkdirAll(path, cfg.DEFAULT_CHMOD); err != nil {
 				color.PrintfError("Can't create \"site-packages\" directory. Please create it manually, otherwise you will get an error\n")
 			}
 		} else {
@@ -116,8 +116,8 @@ func FormatName(dirName string) string {
 	return strings.ToLower(strings.ReplaceAll(dirName, "-", "_"))
 }
 
-func GetFirstPackageMetaDir(libDir, pkgName string) string {
-	dirInfo, err := ioutil.ReadDir(libDir)
+func GetFirstPackageMetaDir(pkgName string) string {
+	dirInfo, err := ioutil.ReadDir(cfg.PathToLib)
 	if err != nil {
 		return ""
 	}
@@ -133,9 +133,9 @@ func GetFirstPackageMetaDir(libDir, pkgName string) string {
 	return ""
 }
 
-func GetAllPackageDirs(pkgName, libDir string) []string {
+func GetAllPackageDirs(pkgName string) []string {
 	var dirs []string
-	dirInfo, err := os.Open(libDir)
+	dirInfo, err := os.Open(cfg.PathToLib)
 	if err != nil {
 		return dirs
 	}
@@ -161,9 +161,9 @@ func GetAllPackageDirs(pkgName, libDir string) []string {
 }
 
 // Count size of all files in directory and return bytes
-func GetDirSize(path string) int64 {
+func GetDirSize(dir string) int64 {
 	var size int64
-	_ = filepath.Walk(path, func(_ string, info os.FileInfo, _ error) error {
+	_ = filepath.Walk(cfg.PathToLib + dir, func(_ string, info os.FileInfo, _ error) error {
 		if info != nil && !info.IsDir() {
 			size += info.Size()
 		}

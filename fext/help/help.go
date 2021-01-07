@@ -1,7 +1,7 @@
 package help
 
 import (
-	"github.com/Flacy/fext/fext/base_cfg"
+	"github.com/Flacy/fext/fext/cfg"
 
 	"fmt"
 )
@@ -30,8 +30,8 @@ func ShowUninstall() {
 }
 
 // print debug info
-func ShowDebug(pathToConfig string, libDir string) {
+func ShowDebug(pathToConfig string) {
 	fmt.Printf("FEXT (%s)\n\nUsing config: %s\nLinked to: %s\n",
-				base_cfg.VERSION, pathToConfig, libDir)
+				cfg.VERSION, pathToConfig, cfg.PathToLib)
 }
 

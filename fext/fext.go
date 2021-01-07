@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Flacy/fext/fext/base_cfg"
+	"github.com/Flacy/fext/fext/cfg"
 	"github.com/Flacy/fext/fext/cmd"
 	"github.com/Flacy/fext/fext/help"
 	"github.com/Flacy/fext/fext/utils"
@@ -13,7 +13,7 @@ import (
 )
 
 func loadConfig(configDir string) *ini.File {
-	config, err := ini.Load(configDir + base_cfg.CONFIG_NAME)
+	config, err := ini.Load(configDir + cfg.CONFIG_FILE_NAME)
 	if err != nil {
 		// insert default cfg
 		config = ini.Empty()
@@ -24,7 +24,7 @@ func loadConfig(configDir string) *ini.File {
 }
 
 func saveConfig(configDir string, config *ini.File) {
-	err := config.SaveTo(configDir + base_cfg.CONFIG_NAME)
+	err := config.SaveTo(configDir + cfg.CONFIG_FILE_NAME)
 
 	if err != nil {
 		panic(err)
@@ -42,7 +42,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		} else {
-			configDir += base_cfg.PATH_SEPARATOR
+			configDir += cfg.PATH_SEPARATOR
 		}
 
 		command := args[0]
@@ -55,17 +55,18 @@ func main() {
 			libDirKey.SetValue(utils.GetPythonLibDirectory())
 		}
 		// do it, cause on windows separator doesn't saves
-		libDir := libDirKey.Value() + base_cfg.PATH_SEPARATOR
+		cfg.PathToLib = libDirKey.Value() + cfg.PATH_SEPARATOR
+		cfg.PythonVersion = utils.ParsePythonVersion(cfg.PathToLib)
 
 		switch command {
 		case "install", "i":
-			cmd.Install(libDir, args)
+			cmd.Install(args)
 		case "uninstall", "u":
-			cmd.Uninstall(libDir, args)
+			cmd.Uninstall(args)
 		case "freeze":
-			cmd.Freeze(libDir)
+			cmd.Freeze()
 		case "debug":
-			help.ShowDebug(configDir +base_cfg.CONFIG_NAME, libDir)
+			help.ShowDebug(configDir + cfg.CONFIG_FILE_NAME)
 		default:
 			fmt.Println("Unexpected command")
 		}
