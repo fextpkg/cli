@@ -13,7 +13,7 @@ deps:
 
 install:
 ifeq ($(OS),Windows_NT)
-	mv fext-bin "$(USERPROFILE)\\fext"
+	mv fext-bin "$(USERPROFILE)\\fext.exe"
 else
 ifeq ($(shell uname),Linux)
 	mv fext-bin ~/.local/bin/fext
