@@ -14,7 +14,7 @@ func Show() {
 				"\t(u)ninstall [options] <package(s)> - uninstall a package(s)\n",
 				"\tfreeze - show list of installed packages\n",
 				"\tdebug - show debug info",
-				"\n\nFor additional help you can write: \n\tfext <command> -h")
+				"\n\nFor additional help you can write:\n\tfext <command> -h")
 }
 
 // print install help info

@@ -8,27 +8,31 @@ import (
 
 	"fmt"
 	"os"
-
-	"github.com/go-ini/ini"
 )
 
-func loadConfig(configDir string) *ini.File {
-	config, err := ini.Load(configDir + cfg.CONFIG_FILE_NAME)
-	if err != nil {
-		// insert default cfg
-		config = ini.Empty()
-		config.Section("main").NewKey("libDir", "")
-	}
-
-	return config
-}
-
-func saveConfig(configDir string, config *ini.File) {
-	err := config.SaveTo(configDir + cfg.CONFIG_FILE_NAME)
-
+func initBaseVariables() {
+	configDir, err := os.UserConfigDir()
 	if err != nil {
 		panic(err)
 	}
+	cfg.PathToConfigDir = configDir + cfg.PATH_SEPARATOR
+}
+
+func initVariables() {
+	libDirKey := cfg.ConfigFile.Section("main").Key("libDir")
+	if libDirKey.String() == "" {
+		// init
+		libDirKey.SetValue(utils.GetPythonLibDirectory())
+	}
+	// do it, cause on windows separator doesn't saves
+	cfg.PathToLib = libDirKey.Value() + cfg.PATH_SEPARATOR
+	cfg.PythonVersion = utils.ParsePythonVersion(cfg.PathToLib)
+}
+
+func initConfig() {
+	initBaseVariables()
+	cfg.Load()
+	initVariables()
 }
 
 func main() {
@@ -38,25 +42,10 @@ func main() {
 	if len(args) == 0 {
 		help.Show()
 	} else {
-		configDir, err := os.UserConfigDir()
-		if err != nil {
-			panic(err)
-		} else {
-			configDir += cfg.PATH_SEPARATOR
-		}
-
 		command := args[0]
 		args = args[1:]
-		config := loadConfig(configDir)
-		libDirKey := config.Section("main").Key("libDir")
 
-		if libDirKey.String() == "" {
-			// init
-			libDirKey.SetValue(utils.GetPythonLibDirectory())
-		}
-		// do it, cause on windows separator doesn't saves
-		cfg.PathToLib = libDirKey.Value() + cfg.PATH_SEPARATOR
-		cfg.PythonVersion = utils.ParsePythonVersion(cfg.PathToLib)
+		initConfig()
 
 		switch command {
 		case "install", "i":
@@ -66,11 +55,12 @@ func main() {
 		case "freeze":
 			cmd.Freeze()
 		case "debug":
-			help.ShowDebug(configDir + cfg.CONFIG_FILE_NAME)
+			help.ShowDebug(cfg.PathToConfigDir + cfg.CONFIG_FILE_NAME)
 		default:
 			fmt.Println("Unexpected command")
 		}
 
-		saveConfig(configDir, config)
+		cfg.Save()
 	}
 }
+

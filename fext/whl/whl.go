@@ -86,6 +86,5 @@ func (p Package) GetExtra(name string) ([]string, error) {
 
 // Calculate all size of files in directory with source code. Returns size in bytes
 func (p *Package) GetSize() int64 {
-	// TODO check workable
 	return utils.GetDirSize(strings.SplitN(p.metaDir, "-", 2)[0])
 }

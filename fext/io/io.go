@@ -66,7 +66,7 @@ func UninstallPackages(packages []string, collectDependencies, inRecurse bool) (
 		} else if collectDependencies {
 			dependencies, err = pkg.GetDependencies()
 			if err != nil {
-				color.PrintfWarning("Unable to parse dependencies (%s). Skipping..\n", err.Error())
+				color.PrintfWarning("Unable to parse dependencies (%s)\n", err.Error())
 			}
 		}
 
