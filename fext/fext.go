@@ -42,10 +42,9 @@ func main() {
 	if len(args) == 0 {
 		help.Show()
 	} else {
+		initConfig()
 		command := args[0]
 		args = args[1:]
-
-		initConfig()
 
 		switch command {
 		case "install", "i":
