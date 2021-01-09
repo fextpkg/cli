@@ -27,9 +27,14 @@ func Install(args []string) {
 	}
 
 	packages := args[offset:]
-	count, dependencyCount := io.SingleThreadDownload(packages, 0, &opt)
+	count, dependencyCount, size := io.SingleThreadDownload(packages, 0, &opt)
 
-	fmt.Printf("\nInstalled %d packages and %d dependencies\n", count, dependencyCount)
+	fmt.Printf(
+		"\nInstalled %d packages and %d dependencies (%.2f MB)\n",
+		count,
+		dependencyCount,
+		float32(size / 1024) / 1024,
+	)
 }
 
 func Uninstall(args []string) {
