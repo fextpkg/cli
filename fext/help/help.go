@@ -19,9 +19,8 @@ func Show() {
 
 // print install help info
 func ShowInstall() {
-	fmt.Println("Available options:")
-				//"\t-t, --thread - Multithread installation\n",
-				//"\t-g, --global - Install packages global (avoid venv)" // TODO
+	fmt.Println("Available options:\n",
+				"\t-s, --single - Install single package, without dependencies")
 }
 
 func ShowUninstall() {

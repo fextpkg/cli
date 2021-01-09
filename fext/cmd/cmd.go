@@ -12,6 +12,11 @@ import (
 	"strings"
 )
 
+func printUnknownOption(opt string, call func()) {
+	color.PrintfError("Unknown option: %s\n", opt)
+	call()
+}
+
 func Install(args []string) {
 	options, offset := utils.ParseOptions(args)
 	opt := io.Options{}
@@ -23,6 +28,9 @@ func Install(args []string) {
 			return
 		case "s", "single":
 			opt.Single = true
+		default:
+			printUnknownOption(option, help.ShowInstall)
+			return
 		}
 	}
 
@@ -48,6 +56,9 @@ func Uninstall(args []string) {
 			return
 		case "w", "with-dependencies":
 			collectDependency = true
+		default:
+			printUnknownOption(option, help.ShowUninstall)
+			return
 		}
 	}
 

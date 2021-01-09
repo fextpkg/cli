@@ -82,7 +82,7 @@ func UninstallPackages(packages []string, collectDependencies, inRecurse bool) (
 		}
 
 		// we don't run the recursion, via collectDependencies arg,
-		// as this could lead to the removal most part of the packets
+		// as this could lead to the removal most part of the packages
 		if len(dependencies) > 0 {
 			for i, dep := range dependencies {
 				// clean name

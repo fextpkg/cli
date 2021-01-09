@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	VERSION = "0.0.3"
+	VERSION = "0.0.5"
 	CONFIG_FILE_NAME = "fext"
 	BASE_PACKAGE_URL = "https://pypi.org/simple/"
 	MAX_MESSAGE_LENGTH = 30 // max letters in progress bar
