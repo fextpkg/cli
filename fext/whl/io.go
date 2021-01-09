@@ -1,6 +1,7 @@
 package whl
 
 import (
+	"fmt"
 	"github.com/Flacy/fext/fext/cfg"
 	"github.com/Flacy/fext/fext/utils"
 
@@ -23,13 +24,21 @@ func findOptimalPackageMetaDir(pkgName string) (string, error) {
 	return optimalDir, nil
 }
 
-func loadPackageContent(dir, fileName string) (string, error) {
-	content, err := ioutil.ReadFile(cfg.PathToLib + dir + cfg.PATH_SEPARATOR + fileName)
+// Load and parse meta data. Returns [[key, value]]
+func loadPackageMetaData(metaDir string) ([][]string, error) {
+	content, err := ioutil.ReadFile(cfg.PathToLib + metaDir + cfg.PATH_SEPARATOR + "METADATA")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return string(content), nil
+	var metaData [][]string
+	for _, v := range strings.Split(string(content), "\n") {
+		if !strings.HasSuffix(v, " ") { // skip description and other strings
+			metaData = append(metaData, strings.SplitN(v, ": ", 2))
+		}
+	}
+
+	return metaData, nil
 }
 
 // split description and meta, then drop part with description
@@ -39,46 +48,71 @@ func splitMeta(rawContent string) []string {
 }
 
 // load and parse wheel package info
-func loadMeta(dir string) (*map[string]string, error) {
+func loadMeta(metaDir string) (*map[string]string, error) {
+	// TODO : refactor functions for correct work in all versions
 	pkgInfo := map[string]string{}
-	rawContent, err := loadPackageContent(dir, "METADATA")
-	if err != nil {
-		return &pkgInfo, err
-	}
-
-	for _, v := range splitMeta(rawContent) {
-		s := strings.SplitN(v, ": ", 2)
-		pkgInfo[s[0]] = s[1] // key = value
-	}
-	delete(pkgInfo, "Description")
 
 	return &pkgInfo, nil
 }
 
-func loadDependencies(dir string) ([]string, error) {
-	var dependencies []string
-	rawContent, err := loadPackageContent(dir, "METADATA")
+// Returns dependencies, extra without the result of comparisons
+func loadRawDependenciesAndExtra(metaDir string) ([]string, []string, error) {
+	var dependencies, extra []string
+	metaData, err := loadPackageMetaData(metaDir)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	var findKey bool
-	for _, v := range splitMeta(rawContent) {
-		s := strings.SplitN(v, ": ", 2) // [key, value]
-		if s[0] == "Requires-Dist" {
-			findKey = true
-			s = strings.Split(s[1], " ; ")
-			if len(s) > 1 { // check if contains expression
-				if ok, _ := utils.CompareExpression(s[1], dir); !ok {
-					continue
-				}
+	for _, v := range metaData {
+		if v[0] == "Requires-Dist" {
+			value := v[1]
+			if strings.Contains(value, "extra") {
+				extra = append(extra, value)
+			} else {
+				dependencies = append(dependencies, value)
 			}
-			dependencies = append(dependencies, s[0])
-		} else if findKey || s[0] == "Provides-Extra" {
-			break
 		}
+	}
+
+	return dependencies, extra, nil
+}
+
+// Parse and compare dependencies
+func parseDependencies(metaDir string, rawDependencies []string) ([]string, error) {
+	var dependencies []string
+	for _, dep := range rawDependencies {
+		v := strings.SplitN(dep, " ; ", 2)
+		if len(v) > 1 { // check if value have expression
+			ok, err := utils.CompareExpression(dep, metaDir)
+			if err != nil {
+				return nil, err
+			} else if !ok {
+				continue
+			}
+		}
+
+		dependencies = append(dependencies, v[0])
 	}
 
 	return dependencies, nil
 }
 
+// Parse and compare raw extra and returns packages provides by extra
+func parseExtra(name, metaDir string, rawExtra []string) ([]string, error) {
+	var extraPackages []string
+	for _, v := range rawExtra {
+		data := strings.SplitN(v, " ; ", 2) // [name, expression]
+		exp := fmt.Sprintf("extra == '%s'", name)
+		if strings.Contains(data[1], exp) {
+			data[1] = strings.ReplaceAll(data[1], exp, "true")
+			ok, err := utils.CompareExpression(data[1], metaDir)
+			if err != nil {
+				return nil, err
+			} else if ok {
+				extraPackages = append(extraPackages, data[0])
+			}
+		}
+	}
+
+	return extraPackages, nil
+}

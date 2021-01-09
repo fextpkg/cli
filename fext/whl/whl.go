@@ -69,19 +69,41 @@ func (p *Package) Uninstall() error {
 	return nil
 }
 
-// Parse dependencies of wheel metadata. Returns error if package have unsupported format
+// Parse dependencies of wheel metadata. Returns error if package have
+// unsupported format or another parse error
 func (p *Package) GetDependencies() ([]string, error) {
 	if p.Format == FORMAT_WHEEL {
-		return loadDependencies(p.metaDir)
+		rawDependencies, _, err := loadRawDependenciesAndExtra(p.metaDir)
+		if err != nil {
+			return nil, err
+		}
+		return parseDependencies(p.metaDir, rawDependencies)
 	} else {
 		return nil, errors.New("Unsupported format: " + p.Format)
 	}
 }
 
-// Get extra packages. Returns error if extra name doesn't exists, or another parse error
-func (p Package) GetExtra(name string) ([]string, error) {
-	// TODO
-	return nil, nil
+// Get extra packages. Returns error if package have unsupported format
+// or another parse error
+func (p *Package) GetExtraPackages(names []string) ([]string, error) {
+	if p.Format == FORMAT_WHEEL {
+		_, rawExtra, err := loadRawDependenciesAndExtra(p.metaDir)
+		if err != nil {
+			return nil, err
+		}
+
+		var extra []string
+		for _, name := range names {
+			packages, err := parseExtra(name, p.metaDir, rawExtra)
+			if err != nil {
+				return nil, err
+			}
+			extra = append(extra, packages...)
+		}
+		return extra, nil
+	} else {
+		return nil, errors.New("Unsupported format: " + p.Format)
+	}
 }
 
 // Calculate all size of files in directory with source code. Returns size in bytes
