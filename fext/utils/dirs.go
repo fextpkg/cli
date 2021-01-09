@@ -1,10 +1,9 @@
 package utils
 
 import (
+	"fmt"
 	"github.com/Flacy/fext/fext/cfg"
 	"github.com/Flacy/fext/fext/color"
-
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -136,25 +135,20 @@ func GetFirstPackageMetaDir(pkgName string) string {
 
 func GetAllPackageDirs(pkgName string) []string {
 	var dirs []string
-	dirInfo, err := os.Open(cfg.PathToLib)
+	dirInfo, err := ioutil.ReadDir(cfg.PathToLib)
 	if err != nil {
 		return dirs
 	}
-	defer dirInfo.Close()
-	pkgNames, _ := dirInfo.Readdirnames(0)
 	pkgName = FormatName(pkgName)
 
 	// first we check if we have found the right name, then we check if we have exceeded the boundaries
-	var findPrefix bool
-	for _, dirName := range pkgNames {
-		curPkgName, _, _ := ParseDirectoryName(dirName)
-		if FormatName(curPkgName) != pkgName {
-			if findPrefix {
-				break
-			}
-		} else {
-			findPrefix = true
-			dirs = append(dirs, dirName)
+	var originalName string
+	for _, dir := range dirInfo {
+		originalName = dir.Name()
+		curPkgName, _, _ := ParseDirectoryName(originalName)
+		if FormatName(curPkgName) == pkgName {
+			// TODO optimize this shit
+			dirs = append(dirs, originalName)
 		}
 	}
 
