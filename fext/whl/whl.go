@@ -10,7 +10,6 @@ import (
 
 const (
 	FORMAT_WHEEL = "dist-info"
-	FORMAT_EGG = "egg-info"
 )
 
 type Package struct {
@@ -87,6 +86,7 @@ func (p *Package) GetDependencies() ([]string, error) {
 // or another parse error
 func (p *Package) GetExtraPackages(names []string) ([]string, error) {
 	if p.Format == FORMAT_WHEEL {
+		// TODO : do something with errors when extra name not found
 		_, rawExtra, err := loadRawDependenciesAndExtra(p.metaDir)
 		if err != nil {
 			return nil, err

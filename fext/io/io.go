@@ -1,6 +1,7 @@
 package io
 
 import (
+	"errors"
 	"fmt"
 	"github.com/Flacy/fext/fext/color"
 	"github.com/Flacy/fext/fext/utils"
@@ -96,4 +97,21 @@ func UninstallPackages(packages []string, collectDependencies, inRecurse bool) (
 	}
 
 	return count, depCount, size
+}
+
+// Parse and comparison extra packages provides by names. Returns error if
+// extra not found or another parse error
+func GetExtraPackages(pkgName string, names []string) ([]string, error) {
+	pkg, err := whl.LoadPackage(pkgName)
+	if err != nil {
+		return nil, err
+	} else {
+		extraPackages, err := pkg.GetExtraPackages(names)
+		if err != nil {
+			return nil, err
+		} else if len(extraPackages) == 0 {
+			return nil, errors.New("Extra packages not found")
+		}
+		return extraPackages, nil
+	}
 }
