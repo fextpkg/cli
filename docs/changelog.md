@@ -1,6 +1,12 @@
+### v0.0.5
+\+ Implemented possibility to installs extra packages<br>
+\+ Added -s option for install command<br>
+\+ Added print of handled size when using a commands<br>
+\+ Some optimizations
+
 ### v0.0.3
 \+ Implemented beauty uninstall and flag -w (see documentation)<br>
-\- Fixed critical errors with scan dirs, when you can write one letter of package name and uninstall them
+\- Fixed critical errors with a scan dirs, when you can write one letter of package name and uninstall them
 
 ### v0.0.2b
 \+ Changed chmod from unsafe (777) to safe (755)

@@ -7,5 +7,4 @@ Installation from sources requires Go 1.13+<br>
 You can conveniently install the package via next commands:
 ```bash
 go get github.com/Flacy/fext/fext
-go install github.com/Flacy/fext/fext
 ```

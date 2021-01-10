@@ -1,4 +1,4 @@
-The Fext currently does not support all commands for now, but it will certainly support in the future. But, base functional of course Fext provides.
+The Fext does not support all commands that PIP provides for now, but will be in the future.
 
 #### Available commands for now:
 * [install](#install) (Install a packages)
@@ -9,7 +9,9 @@ The Fext currently does not support all commands for now, but it will certainly 
 ## Install
 Syntax: `fext i [options] <package(s)>`
 
-Installs selected packages, dependencies and dependencies of dependencies. By default it search latest package version, but you can specify comparison operator. You can write them however as you want.
+Installs selected packages, dependencies and dependencies of dependencies.
+By default, it searches the latest package version, but you can specify comparison operator.
+You can write them however as you want.
 <br>Examples:
 ```bash
 fext i aiohttp<=3
@@ -17,33 +19,37 @@ fext i "aiohttp <=3"
 fext i "aiohttp (<=3 >=1)"
 ```
 <br>
+Also, you can install extra packages as:
+
+```bash
+fext i requests[socks,security]
+```
 
 Available options:
 
-- missing here
+* `-s`, `--single` - Installs single package without dependencies
 
 Planned options:
 
-* `-s`, `--single` - Install single package without dependencies
-* `-t`, `--thread` - Enable multi-threading download
-* `-g`, `--global` - Install package globally (for avoid virtualenv)
-* `-S`, `--safe` - Safe install. This means if the package requires a different version of the installed package as a dependency, a fatal error will be thrown. (E.g package required `yarl <= 1`, but package `%packageName%` installed in system required `yarl >= 2`, there will be a fatal error)
+* `-t`, `--thread` - Enables multi-threading download
+* `-g`, `--global` - Installs package globally (for avoid virtualenv)
+* `-S`, `--safe` - Safe installation. This means if the package requires a different version of the installed package as a dependency, a fatal error will be thrown. (E.g package required `yarl <= 1`, but package `%packageName%` installed in system required `yarl >= 2`, there will be a fatal error)
 
 ## Uninstall
 Syntax: `fext u [options] <package(s)>`
 
-Uninstall single packages without dependencies.<br>
+Uninstalls single packages without dependencies.<br>
 
 Available options:
 
-* `-w`, `--with-dependencies` - Uninstall dependencies also
+* `-w`, `--with-dependencies` - Uninstalls dependencies also
 
 ## Freeze
 Syntax: `fext freeze`
 
-Show list of installed packages
+Shows list of installed packages
 
 ## Debug
 Syntax: `fext debug`
 
-Show debug info.
+Shows debug info.
