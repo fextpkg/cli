@@ -17,7 +17,7 @@ type Buffer struct {
 
 func (b *Buffer) Write(data []byte) (int, error) {
 	count := len(data)
-	b.DownloadedBytes += count / 1024 // convert to KiB
+	b.DownloadedBytes += count / 1024 // convert to KB
 	b.updateProgressBar()
 
 	return count, nil
@@ -26,7 +26,7 @@ func (b *Buffer) Write(data []byte) (int, error) {
 func (b *Buffer) updateProgressBar() {
 	utils.ClearLastMessage(b.maxMessageLength)
 
-	fmt.Printf("\r%s - Downloading.. (%d/%d KiB)",
+	fmt.Printf("\r%s - Downloading.. (%d/%d KB)",
 				b.pkgName, b.DownloadedBytes, b.Total)
 }
 
