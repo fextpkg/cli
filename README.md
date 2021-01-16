@@ -13,7 +13,7 @@ Fext is a modern, small, fast, Go powered package manager for Python.
 Installation progress is dead simple.
 All you have to do is use [pip](https://github.com/pypa/pip): 
 ```bash
-pip install fext
+pip install fext-cli
 ```
 Or standalone script:
 ```bash
@@ -22,11 +22,11 @@ curl -L https://fextpgk.org/install.sh | sh
 
 ## Basic usage
 To install a package use:
-```bash
+```
 fext i(nstall) <package(s)> # fext i aiohttp
 ```
 To uninstall:
-```bash
+```
 fext u(ninstall) <package(s)> # fext u aiohttp
 ```
 More commands can be found in [documentation](https://fext.readthedocs.io/en/latest/).
