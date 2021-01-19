@@ -4,12 +4,13 @@ package cfg
 
 import (
 	"github.com/fextpkg/cli/fext/color"
+
 	"runtime"
 )
 
 func init() {
 	color.PrintfWarning("Fext doesn't support %s. This means that it doesn't guarantee stable operation",
-						runtime.GOOS)
+		runtime.GOOS)
 }
 
 const (
