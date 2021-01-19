@@ -1,8 +1,6 @@
 package utils
 
-import (
-	"runtime"
-)
+import "github.com/fextpkg/cli/fext/cfg"
 
 // Python env markers (PEP 508)
 
@@ -13,16 +11,5 @@ func GetPythonVersion(libDir string) string {
 
 // sys_platform
 func GetSysPlatform() string {
-	const OS = runtime.GOOS
-
-	if OS == "windows" {
-		return "win32"
-	} else if OS == "linux" {
-		// Please NOTE! FEXT DOESN'T support python 2, respectively value "linux2" also
-		return "linux"
-	} else if OS == "darwin" {
-		return "darwin"
-	}
-
-	return ""
+	return cfg.PYOS
 }

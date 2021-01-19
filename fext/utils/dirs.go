@@ -13,8 +13,6 @@ import (
 	"strings"
 )
 
-const OS = runtime.GOOS
-
 func SelectOneDirectory(baseDir string, versions []string) string {
 	var path string
 	countV := len(versions)
@@ -62,37 +60,9 @@ func createSitePackagesDir(path string) {
 	}
 }
 
-func GetPythonBinDirectory(version string) string {
-	// TODO add venv support
-	if OS == "windows" {
-		// TODO
-	} else if OS == "linux" {
-		return "/usr/bin/python" + version
-	} else if OS == "" {
-		// TODO
-	}
-
-	panic("Unsupported OS\n")
-}
-
-// select one dir without version
+// select one dir
 func GetPythonLibDirectory() string {
-	var path string
-	if OS == "windows" {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			panic(err)
-		}
-
-		path = getPythonDirectory(homeDir + "\\AppData\\Local\\Programs\\Python\\", "Python") + "\\Lib\\site-packages"
-	} else if OS == "linux" {
-		path = getPythonDirectory("/usr/lib/", "python") + "/site-packages"
-	} else if OS == "darwin" { // mac os
-		path = getPythonDirectory("/usr/local/lib/", "python") + "/site-packages"
-	} else {
-		panic("Unsupported OS\n")
-	}
-
+	path := getPythonDirectory(cfg.OS_LIB_PATH, cfg.PYTHON_PREFIX) + cfg.PATH_TO_SITE_PACKAGES
 	createSitePackagesDir(path)
 	return path
 }
@@ -101,7 +71,7 @@ func ParsePythonVersion(path string) string {
 	re, _ := regexp.Compile(`\d[\d|\.]+`)
 	v := re.FindString(path)
 
-	if OS == "windows" {
+	if runtime.GOOS == "windows" {
 		if v == "" {
 			panic("Unable to parse version. Please check, that the selected directory contains version")
 		}

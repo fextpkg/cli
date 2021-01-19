@@ -15,7 +15,7 @@ const (
 	PATH_SEPARATOR = string(os.PathSeparator)
 )
 
-var ( // will fill in future, when program will runs
+var ( // will fill in future, when program runs
 	PathToLib string
 	PythonVersion string
 	PathToConfigDir string
