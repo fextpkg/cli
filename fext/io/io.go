@@ -25,8 +25,6 @@ func (b *Buffer) Write(data []byte) (int, error) {
 }
 
 func (b *Buffer) updateProgressBar() {
-	utils.ClearLastMessage(b.maxMessageLength)
-
 	fmt.Printf("\r%s - Downloading.. (%d/%d KB)",
 				b.pkgName, b.DownloadedBytes, b.Total)
 }
