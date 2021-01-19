@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	color.PrintfWarning("Fext doesn't support %s. This means that it doesn't guarantee stable operation",
+	color.PrintfWarning("Fext doesn't support %s. This means that it doesn't guarantee stable operation\n",
 		runtime.GOOS)
 }
 
