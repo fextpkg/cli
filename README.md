@@ -17,7 +17,7 @@ pip install fext-cli
 ```
 Or standalone script:
 ```bash
-curl -L https://fextpgk.org/install.sh | sh
+curl -L https://fextpkg.org/install.sh | sh
 ```
 
 ## Basic usage
