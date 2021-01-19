@@ -1,9 +1,10 @@
 package utils
 
 import (
+	"github.com/fextpkg/cli/fext/cfg"
+	"github.com/fextpkg/cli/fext/color"
+
 	"fmt"
-	"github.com/Flacy/fext/fext/cfg"
-	"github.com/Flacy/fext/fext/color"
 	"io/ioutil"
 	"os"
 	"path/filepath"

@@ -1,10 +1,10 @@
 package whl
 
 import (
-	"fmt"
-	"github.com/Flacy/fext/fext/cfg"
-	"github.com/Flacy/fext/fext/utils"
+	"github.com/fextpkg/cli/fext/cfg"
+	"github.com/fextpkg/cli/fext/utils"
 
+	"fmt"
 	"io/ioutil"
 	"strings"
 )

@@ -1,9 +1,10 @@
 package whl
 
 import (
+	"github.com/fextpkg/cli/fext/cfg"
+	"github.com/fextpkg/cli/fext/utils"
+
 	"errors"
-	"github.com/Flacy/fext/fext/cfg"
-	"github.com/Flacy/fext/fext/utils"
 	"os"
 	"strings"
 )

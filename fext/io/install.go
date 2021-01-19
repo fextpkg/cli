@@ -1,10 +1,10 @@
 package io
 
 import (
-	"github.com/Flacy/fext/fext/cfg"
-	"github.com/Flacy/fext/fext/color"
-	"github.com/Flacy/fext/fext/utils"
-	"github.com/Flacy/fext/fext/whl"
+	"github.com/fextpkg/cli/fext/cfg"
+	"github.com/fextpkg/cli/fext/color"
+	"github.com/fextpkg/cli/fext/utils"
+	"github.com/fextpkg/cli/fext/whl"
 	"strings"
 
 	"errors"

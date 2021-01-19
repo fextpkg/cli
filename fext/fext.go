@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/Flacy/fext/fext/cfg"
-	"github.com/Flacy/fext/fext/cmd"
-	"github.com/Flacy/fext/fext/help"
-	"github.com/Flacy/fext/fext/utils"
+	"github.com/fextpkg/cli/fext/cfg"
+	"github.com/fextpkg/cli/fext/cmd"
+	"github.com/fextpkg/cli/fext/help"
+	"github.com/fextpkg/cli/fext/utils"
 
 	"fmt"
 	"os"

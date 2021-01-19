@@ -1,7 +1,7 @@
 package whl
 
 import (
-	"github.com/Flacy/fext/fext/cfg"
+	"github.com/fextpkg/cli/fext/cfg"
 
 	"archive/zip"
 	"io"

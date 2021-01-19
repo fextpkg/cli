@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/Flacy/fext/fext/cfg"
 	"github.com/Flacy/fext/fext/color"
 	"github.com/Flacy/fext/fext/help"
 	"github.com/Flacy/fext/fext/io"
 	"github.com/Flacy/fext/fext/utils"
+
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"

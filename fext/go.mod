@@ -1,4 +1,4 @@
-module github.com/Flacy/fext/fext
+module github.com/fextpkg/cli/fext
 
 go 1.15
 

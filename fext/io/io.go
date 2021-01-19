@@ -1,11 +1,12 @@
 package io
 
 import (
+	"github.com/fextpkg/cli/fext/color"
+	"github.com/fextpkg/cli/fext/utils"
+	"github.com/fextpkg/cli/fext/whl"
+	
 	"errors"
 	"fmt"
-	"github.com/Flacy/fext/fext/color"
-	"github.com/Flacy/fext/fext/utils"
-	"github.com/Flacy/fext/fext/whl"
 )
 
 type Buffer struct {
