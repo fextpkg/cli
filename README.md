@@ -1,7 +1,24 @@
-# Fext
-[![Latest](https://img.shields.io/github/v/release/fextpkg/cli)](https://github.com/fextpkg/cli/releases?latest) [![Gover](https://img.shields.io/github/go-mod/go-version/fextpkg/cli?filename=fext%2Fgo.mod)](https://golang.org/dl/) [![License](https://img.shields.io/github/license/fextpkg/cli)](https://github.com/fextpkg/cli/blob/main/LICENSE)
+<p align="center">
+  <img src="https://i.imgur.com/QgCp0Ra.png" alt="logo" width="100" height="100">
+</p>
 
-Fext is a modern, small, fast, Go powered package manager for Python.
+<p align="center">
+  <a href="https://github.com/fextpkg/cli/releases?latest">
+    <img src="https://img.shields.io/github/v/release/fextpkg/cli">
+  </a>
+  <a href="https://golang.org/dl/">
+    <img src="https://img.shields.io/github/go-mod/go-version/fextpkg/cli?filename=fext%2Fgo.mod">
+  </a>
+    <a href="https://github.com/fextpkg/cli/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/fextpkg/cli">
+  </a>
+</p>
+
+
+<h1 align="center">Fext</h2>
+<p align="center">
+  Fext is a modern, small, fast, Go powered package manager for Python.
+</p>
 
 ## Features
 - **Speed.** Fast packages downloading and installation process.
