@@ -6,7 +6,7 @@ Fext is a modern, small, fast, Go powered package manager for Python.
 ## Features
 - **Speed.** Fast packages downloading and installation process.
 - **Dependencies free.** Fext is designed with minimum use of dependencies.
-- **Shorcuts.** Every command has it's own shortcut for fastest user expirience.
+- **Shortcuts.** Every command has it's own shortcut for fastest user expirience.
 - **Backward compatibility.** Every function designed to be compatible with PIP.
 
 ## Installation
