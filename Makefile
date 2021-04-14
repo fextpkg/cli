@@ -6,10 +6,10 @@ ifndef $(GOBIN)
 endif
 
 build:
-	go build -i -o fext-bin ./fext/fext.go
+	cd ./fext ; go build -o ../fext-bin ./fext.go
 
 deps:
-	go get ./fext
+	cd ./fext ; go get .
 
 install:
 ifeq ($(OS),Windows_NT)
