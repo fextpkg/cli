@@ -19,7 +19,6 @@ type Package struct {
 	metaDir string
 	dataDir string
 	Data    *map[string]string
-	Format  string
 }
 
 func LoadPackage(name string) (*Package, error) {
@@ -29,7 +28,6 @@ func LoadPackage(name string) (*Package, error) {
 	}
 
 	p := Package{Name: name, metaDir: metaDir, dataDir: dataDir}
-	p.Format = utils.ParseFormat(metaDir)
 
 	return &p, nil
 }
