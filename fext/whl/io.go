@@ -9,19 +9,20 @@ import (
 	"strings"
 )
 
-// Find all package directories and select wheel (dist-info) if exists, otherwise select egg-info (legacy)
-func findOptimalPackageMetaDir(pkgName string) (string, error) {
+// Get directories with metadata and data
+func getPackageDirs(pkgName string) (string, string) {
 	dirs := utils.GetAllPackageDirs(pkgName)
 
-	var optimalDir string
+	var metaDir, dataDir, fmt string
 	for _, dir := range dirs {
-		optimalDir = dir
-
-		if utils.ParseFormat(dir) == FORMAT_WHEEL {
-			break
+		fmt = utils.ParseFormat(dir)
+		if fmt == FORMAT_META {
+			metaDir = dir
+		} else if fmt == FORMAT_DATA {
+			dataDir = dir
 		}
 	}
-	return optimalDir, nil
+	return metaDir, dataDir
 }
 
 // Load and parse meta data. Returns [[key, value]]
