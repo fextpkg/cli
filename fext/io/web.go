@@ -1,7 +1,7 @@
 package io
 
 import (
-	"github.com/fextpkg/cli/fext/cfg"
+	"github.com/fextpkg/cli/fext/config"
 	"github.com/fextpkg/cli/fext/utils"
 
 	"errors"
@@ -14,7 +14,7 @@ import (
 )
 
 func getPackageList(name string) (*html.Node, error) {
-	resp, err := http.Get(cfg.BASE_PACKAGE_URL + name + "/")
+	resp, err := http.Get("https://pypi.org/simple/" + name + "/")
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func downloadPackage(buffer interface {
 	}
 	defer resp.Body.Close()
 
-	tmpFile, err := os.Create(cfg.PathToLib + hashSum + ".tmp")
+	tmpFile, err := os.Create(config.PythonLibPath + hashSum + ".tmp")
 	if err != nil {
 		return "", err
 	}
@@ -110,7 +110,7 @@ func selectCorrectPackageVersion(doc *html.Node, op [][]string) (string, string,
 
 		for _, classifier := range versionClassifiers {
 			_, op := utils.SplitOperators(classifier)
-			if ok, err := utils.CompareVersion(cfg.PythonVersion, op[0][0], op[0][1]); !ok {
+			if ok, err := utils.CompareVersion(config.PythonVersion, op[0][0], op[0][1]); !ok {
 				continue
 			} else if err != nil {
 				return "", "", err
@@ -121,4 +121,3 @@ func selectCorrectPackageVersion(doc *html.Node, op [][]string) (string, string,
 
 	return "", "", errors.New("No matching version was found")
 }
-

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"github.com/fextpkg/cli/fext/config"
 	"regexp"
 	"strconv"
 	"strings"
@@ -12,33 +13,48 @@ import (
 
 // == (equal)
 func eq(a, b int) bool { return a == b }
+
 // == (equal for strings)
 func eqs(a, b string) bool { return a == b }
+
 // != (not equal)
 func ne(a, b int) bool { return a != b }
+
 // != (not equal for strings)
 func nes(a, b string) bool { return a != b }
+
 // <= (less then or equal)
 func lte(a, b int) bool { return a <= b }
+
 // < (less then)
 func lt(a, b int) bool { return a < b }
+
 // >= (greater then or equal)
 func gte(a, b int) bool { return a >= b }
+
 // > (greater then)
 func gt(a, b int) bool { return a > b }
+
 // && (and)
 func and(a, b bool) bool { return a && b }
+
 // || (or)
 func or(a, b bool) bool { return a || b }
 
 func getCompareFunc(operator string) (func(a int, b int) bool, error) {
 	switch operator {
-	case "==": return eq, nil
-	case "!=": return ne, nil
-	case "<=": return lte, nil
-	case "<": return lt, nil
-	case ">=": return gte, nil
-	case ">": return gt, nil
+	case "==":
+		return eq, nil
+	case "!=":
+		return ne, nil
+	case "<=":
+		return lte, nil
+	case "<":
+		return lt, nil
+	case ">=":
+		return gte, nil
+	case ">":
+		return gt, nil
 	default:
 		return nil, errors.New("Unknown operator: " + operator)
 	}
@@ -46,8 +62,10 @@ func getCompareFunc(operator string) (func(a int, b int) bool, error) {
 
 func getStrCompareFunc(operator string) (func(a string, b string) bool, error) {
 	switch operator {
-	case "==": return eqs, nil
-	case "!=": return nes, nil
+	case "==":
+		return eqs, nil
+	case "!=":
+		return nes, nil
 	default:
 		return nil, errors.New("Unsupported operator for strings: " + operator)
 	}
@@ -116,15 +134,15 @@ func splitExpOperators(exp string) ([]string, []string) {
 }
 
 // libDir used for set correct markers (if any)
-func compareSubExpression(s, libDir string) (bool, error) {
-	defer func() {recover()}() // TODO signal about error
+func compareSubExpression(s string) (bool, error) {
+	defer func() { recover() }() // TODO signal about error
 	var cResults []bool
 	c, l := splitExpOperators(s)
 	for _, v := range c {
 		comp := strings.Split(v, " ") // [value, operator, value]
 		if len(comp) > 1 {
 			// remove quotes
-			comp[2] = comp[2][1:len(comp[2])-1]
+			comp[2] = comp[2][1 : len(comp[2])-1]
 		} else { // bool result from past operations
 			value, err := strconv.ParseBool(comp[0])
 			if err != nil {
@@ -137,7 +155,7 @@ func compareSubExpression(s, libDir string) (bool, error) {
 		// set markers value (PEP 508)
 		switch comp[0] {
 		case "python_version":
-			version := GetPythonVersion(libDir)
+			version := GetPythonVersion(config.PythonLibPath)
 			value, err := CompareVersion(version, comp[1], comp[2])
 			if err != nil {
 				return false, err
@@ -168,24 +186,23 @@ func compareSubExpression(s, libDir string) (bool, error) {
 	return lastResult, nil
 }
 
-func CompareExpression(exp, libDir string) (bool, error) {
+func CompareExpression(exp string) (bool, error) {
 	var s, e int // indexes
 	var sub string
 	for {
 		s, e = getBracketIndexes(exp)
 		if s != -1 {
-			sub = exp[s:e + 1] // +1 for collect close bracket
-			sub = sub[1:len(sub) - 1] // remove brackets
-			r, err := compareSubExpression(sub, libDir)
+			sub = exp[s : e+1]        // +1 for collect close bracket
+			sub = sub[1 : len(sub)-1] // remove brackets
+			r, err := compareSubExpression(sub)
 			if err != nil {
 				return false, err
 			}
-			exp = exp[:s] + strconv.FormatBool(r) + exp[e + 1:]
+			exp = exp[:s] + strconv.FormatBool(r) + exp[e+1:]
 		} else {
-			return compareSubExpression(exp, libDir)
+			return compareSubExpression(exp)
 		}
 	}
 
 	return false, nil
 }
-

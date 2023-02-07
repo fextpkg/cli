@@ -1,13 +1,12 @@
 package utils
 
 import (
-	"github.com/fextpkg/cli/fext/cfg"
 	"github.com/fextpkg/cli/fext/color"
+	"github.com/fextpkg/cli/fext/config"
 
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -53,7 +52,7 @@ func createSitePackagesDir(path string) {
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
 			color.PrintfWarning("site-packages directory not detected. Creating..\n")
-			if err = os.MkdirAll(path, cfg.DEFAULT_CHMOD); err != nil {
+			if err = os.MkdirAll(path, config.DefaultChmod); err != nil {
 				color.PrintfError("Can't create \"site-packages\" directory. Please create it manually, otherwise you will get an error\n")
 			}
 		} else {
@@ -84,7 +83,7 @@ func GetPythonLibDirectory() string {
 			panic(err)
 		}
 
-		path = getPythonDirectory(homeDir + "\\AppData\\Local\\Programs\\Python\\", "Python") + "\\Lib\\site-packages"
+		path = getPythonDirectory(homeDir+"\\AppData\\Local\\Programs\\Python\\", "Python") + "\\Lib\\site-packages"
 	} else if OS == "linux" {
 		path = getPythonDirectory("/usr/lib/", "python") + "/site-packages"
 	} else if OS == "darwin" { // mac os
@@ -111,62 +110,3 @@ func ParsePythonVersion(path string) string {
 
 	return v
 }
-
-// format name for correct search
-func FormatName(dirName string) string {
-	return strings.ToLower(strings.ReplaceAll(dirName, "-", "_"))
-}
-
-func GetFirstPackageMetaDir(pkgName string) string {
-	dirInfo, err := ioutil.ReadDir(cfg.PathToLib)
-	if err != nil {
-		return ""
-	}
-	pkgName = FormatName(pkgName)
-
-	for _, dir := range dirInfo {
-		curPkgName, v, _ := ParseDirectoryName(dir.Name())
-		if FormatName(curPkgName) == pkgName && v != "" {
-			return dir.Name()
-		}
-	}
-
-	return ""
-}
-
-func GetAllPackageDirs(pkgName string) []string {
-	var dirs []string
-	dirInfo, err := ioutil.ReadDir(cfg.PathToLib)
-	if err != nil {
-		return dirs
-	}
-	pkgName = FormatName(pkgName)
-
-	// first we check if we have found the right name, then we check if we have exceeded the boundaries
-	var originalName string
-	for _, dir := range dirInfo {
-		originalName = dir.Name()
-		curPkgName, _, _ := ParseDirectoryName(originalName)
-		if FormatName(curPkgName) == pkgName {
-			// TODO optimize this shit
-			dirs = append(dirs, originalName)
-		}
-	}
-
-	return dirs
-}
-
-// Count size of all files in directory and return bytes
-func GetDirSize(dir string) int64 {
-	var size int64
-	_ = filepath.Walk(cfg.PathToLib + dir, func(_ string, info os.FileInfo, _ error) error {
-		if info != nil && !info.IsDir() {
-			size += info.Size()
-		}
-
-		return nil
-	})
-
-	return size
-}
-

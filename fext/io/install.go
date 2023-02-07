@@ -1,10 +1,9 @@
 package io
 
 import (
-	"github.com/fextpkg/cli/fext/cfg"
 	"github.com/fextpkg/cli/fext/color"
+	"github.com/fextpkg/cli/fext/pkg"
 	"github.com/fextpkg/cli/fext/utils"
-	"github.com/fextpkg/cli/fext/whl"
 	"strings"
 
 	"errors"
@@ -17,29 +16,29 @@ type Options struct {
 }
 
 type Package struct {
-	Name string
-	Operators [][]string
-	Version string
+	Name         string
+	Operators    [][]string
+	Version      string
 	Dependencies []string
-	Size int64 // in bytes
+	Size         int64 // in bytes
 }
 
 // clean pkgName and split operators
-func (pkg *Package) Prepare() {
-	pkg.Name, pkg.Operators = utils.SplitOperators(pkg.Name)
+func (p *Package) Prepare() {
+	p.Name, p.Operators = utils.SplitOperators(p.Name)
 }
 
 // Returns pkgName
-func (pkg *Package) DefaultInstall(offset int) (string, error) {
-	pkg.Prepare()
+func (p *Package) DefaultInstall(offset int) (string, error) {
+	p.Prepare()
 
-	nameWithOffset := utils.GetOffsetString(offset) + pkg.Name // used for beauty print when dependency installed
-	fmt.Printf("\r%s - Scanning package..", nameWithOffset)
+	nameWithOffset := utils.GetOffsetString(offset) + p.Name // used for beauty print when dependency installed
+	fmt.Printf("\r%s - Scanning pkg..", nameWithOffset)
 
-	maxMessageLength := cfg.MAX_MESSAGE_LENGTH + len(pkg.Name)
+	maxMessageLength := 20 + len(p.Name)
 	var err error
-	err = pkg.install(&Buffer{
-		pkgName:          pkg.Name,
+	err = p.install(&Buffer{
+		pkgName:          p.Name,
 		maxMessageLength: maxMessageLength,
 	})
 
@@ -51,27 +50,28 @@ func (pkg *Package) DefaultInstall(offset int) (string, error) {
 	return nameWithOffset, nil
 }
 
-func (pkg *Package) install(buffer interface {
+func (p *Package) install(buffer interface {
 	Write([]byte) (int, error)
 	UpdateTotal(int)
 }) error {
-	doc, err := getPackageList(pkg.Name)
+	doc, err := getPackageList(p.Name)
 	if err != nil {
 		return err
 	}
 
 	var link string
-	pkg.Version, link, err = selectCorrectPackageVersion(doc, pkg.Operators)
+	p.Version, link, err = selectCorrectPackageVersion(doc, p.Operators)
 	if err != nil {
 		return err
 	}
 
-	if CheckPackageExists(pkg.Name, [][]string{{"==", pkg.Version}}) {
-		return errors.New("Package already installed")
-	}
+	//if CheckPackageExists(p.Name, [][]string{{"==", p.Version}}) {
+	//	return errors.New("Package already installed")
+	//}
+	// TODO move check above to the bottom lines of code
 
-	// uninstall all other versions of package
-	_pkg, err := whl.LoadPackage(pkg.Name)
+	// uninstall all other versions of pkg
+	_pkg, err := pkg.Load(p.Name)
 	if err == nil {
 		_pkg.Uninstall()
 	}
@@ -87,12 +87,12 @@ func (pkg *Package) install(buffer interface {
 		return err
 	}
 
-	p, err := whl.LoadPackage(pkg.Name)
+	__pkg, err := pkg.Load(p.Name)
 	if err != nil {
 		return err
 	}
-	pkg.Size = p.GetSize()
-	pkg.Dependencies, err = p.GetDependencies()
+	p.Size = __pkg.GetSize()
+	p.Dependencies, err = __pkg.GetDependencies()
 	if err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func (pkg *Package) install(buffer interface {
 }
 
 func setupPackage(pathToFile string) error {
-	return whl.Extract(pathToFile)
+	return pkg.Extract(pathToFile)
 }
 
 func GetExtra(s string) (string, []string, error) {
@@ -115,7 +115,7 @@ func getExtraNames(s string) (string, []string, error) {
 		// find first quote
 		if v == 91 && startQuote == 0 { // v == "["
 			startQuote = i
-		// find last quote
+			// find last quote
 		} else if v == 93 { // v == "]"
 			endQuote = i
 		}
@@ -123,7 +123,7 @@ func getExtraNames(s string) (string, []string, error) {
 
 	if startQuote != 0 && endQuote != 0 {
 		originalName := s[:startQuote]
-		s = s[startQuote+1:endQuote]
+		s = s[startQuote+1 : endQuote]
 		if strings.ContainsAny(s, "[]") {
 			return originalName, nil, errors.New("Syntax error")
 		}

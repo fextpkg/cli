@@ -76,21 +76,3 @@ func SplitOperators(name string) (string, [][]string) {
 
 	return name, operators
 }
-
-func ClearVersion(version string) string {
-	return strings.Replace(version, ".dist", "", 1)
-}
-
-// Returns name, version, format
-func ParseDirectoryName(dirName string) (string, string, string) {
-	// array [name, version, ...]
-	meta := strings.SplitN(dirName, "-", 3)
-
-	// avoid errors
-	if len(meta) >= 2 {
-		return meta[0], ClearVersion(meta[1]), ParseFormat(dirName)
-	} else {
-		return meta[0], "", ""
-	}
-}
-

@@ -93,12 +93,6 @@ func FindMinValue(values []int) int {
 	return min
 }
 
-func ParseFormat(dir string) string {
-	s := strings.Split(dir, ".")
-	return s[len(s) - 1]
-}
-
 func GetOffsetString(offset int) string {
-	return strings.Repeat(" ", offset * 4)
+	return strings.Repeat(" ", offset*4)
 }
-
