@@ -133,7 +133,6 @@ func splitExpOperators(exp string) ([]string, []string) {
 	return comparison, logical
 }
 
-// libDir used for set correct markers (if any)
 func compareSubExpression(s string) (bool, error) {
 	defer func() { recover() }() // TODO signal about error
 	var cResults []bool
@@ -155,19 +154,19 @@ func compareSubExpression(s string) (bool, error) {
 		// set markers value (PEP 508)
 		switch comp[0] {
 		case "python_version":
-			version := GetPythonVersion(config.PythonLibPath)
-			value, err := CompareVersion(version, comp[1], comp[2])
+			value, err := CompareVersion(config.PythonVersion, comp[1], comp[2])
 			if err != nil {
 				return false, err
 			}
 			cResults = append(cResults, value)
 		case "sys_platform":
-			platform := GetSysPlatform()
 			compareFunc, err := getStrCompareFunc(comp[1])
 			if err != nil {
 				return false, err
 			}
-			cResults = append(cResults, compareFunc(platform, comp[2]))
+			cResults = append(cResults, compareFunc(config.SysPlatform, comp[2]))
+		case "extra":
+			cResults = append(cResults, true)
 		default: // skip unknown marker
 			cResults = append(cResults, false)
 		}

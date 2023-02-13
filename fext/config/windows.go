@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	pythonExec = "python"
+	pythonExec  = "python"
+	SysPlatform = "win32" // PEP 508 marker
 )
 
 func getPythonLib() string {
@@ -18,6 +19,7 @@ func getPythonLib() string {
 		panic(err)
 	}
 	// TODO venv support
+	// FIXME: 3.7.0 => 7. || 3.10.0 => 10 (remove dot)
 	// Trim the first 2 characters and leave 2 after them (3.10.0 => 10). Python directory contains only major version
-	return fmt.Sprintf("%s\\Python\\Python3%s\\site-packages", pathToAppData, PythonVersion[2:][:2])
+	return fmt.Sprintf("%s\\Python\\Python3%s\\site-packages\\", pathToAppData, PythonVersion[2:][:2])
 }

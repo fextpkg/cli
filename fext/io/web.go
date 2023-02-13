@@ -13,6 +13,15 @@ import (
 	"golang.org/x/net/html"
 )
 
+func GetAppropriatePackageLink(pkgName string, op [][]string) (string, string, error) {
+	doc, err := getPackageList(pkgName)
+	if err != nil {
+		return "", "", err
+	}
+
+	return selectAppropriateVersion(doc, op)
+}
+
 func getPackageList(name string) (*html.Node, error) {
 	resp, err := http.Get("https://pypi.org/simple/" + name + "/")
 	if err != nil {
@@ -32,37 +41,8 @@ func getPackageList(name string) (*html.Node, error) {
 	return doc, nil
 }
 
-func downloadPackage(buffer interface {
-	Write([]byte) (int, error)
-	UpdateTotal(int)
-},
-	link string) (string, error) {
-	hashSum := strings.Split(link, "sha256=")[1]
-
-	resp, err := http.Get(link)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	tmpFile, err := os.Create(config.PythonLibPath + hashSum + ".tmp")
-	if err != nil {
-		return "", err
-	}
-	defer tmpFile.Close()
-
-	buffer.UpdateTotal(int(resp.ContentLength))
-
-	if _, err = io.Copy(tmpFile, io.TeeReader(resp.Body, buffer)); err != nil {
-		tmpFile.Close()
-		return "", err
-	}
-
-	return tmpFile.Name(), nil
-}
-
-// Parse document and select optimal version. Returns package version, link to download
-func selectCorrectPackageVersion(doc *html.Node, op [][]string) (string, string, error) {
+// Parse document and select optimal version. Returns version and link to download
+func selectAppropriateVersion(doc *html.Node, op [][]string) (string, string, error) {
 	// html => body (on pypi)
 	startNode := doc.FirstChild.NextSibling.FirstChild.NextSibling.NextSibling.LastChild
 	var fullData string
@@ -87,14 +67,14 @@ func selectCorrectPackageVersion(doc *html.Node, op [][]string) (string, string,
 			case "href":
 				link = attr.Val
 			case "data-requires-python":
-				// remove this parts, cause it's works fine without it
+				// remove this parts, because it's works fine without it
 				attr.Val = strings.ReplaceAll(attr.Val, ".*", "")
 				versionClassifiers = strings.Split(attr.Val, ", ")
 			}
 		}
 
-		// if user specified compare operator
 		hasNoOk := false // flag used for continue parent loop
+		// if user specified compare operator
 		for _, op := range op {
 			ok, err := utils.CompareVersion(pkgVersion, op[0], op[1]) // [op, version]
 			if err != nil {
@@ -119,5 +99,28 @@ func selectCorrectPackageVersion(doc *html.Node, op [][]string) (string, string,
 		return pkgVersion, link, nil
 	}
 
-	return "", "", errors.New("No matching version was found")
+	return "", "", errors.New("no matching version was found")
+}
+
+func DownloadPackage(link string) (string, error) {
+	hashSum := strings.Split(link, "sha256=")[1]
+
+	resp, err := http.Get(link)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	tmpFile, err := os.Create(config.PythonLibPath + hashSum + ".tmp")
+	if err != nil {
+		return "", err
+	}
+	defer tmpFile.Close()
+
+	if _, err = io.Copy(tmpFile, io.Reader(resp.Body)); err != nil {
+		tmpFile.Close()
+		return "", err
+	}
+
+	return tmpFile.Name(), nil
 }
