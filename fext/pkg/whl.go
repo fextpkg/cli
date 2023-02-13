@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/fextpkg/cli/fext/config"
 	"github.com/fextpkg/cli/fext/utils"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -223,19 +222,15 @@ func parseDirectoryName(dirName string) (string, string, string) {
 // pkgName. Returns the original directory name. Returns an error if the found
 // format is not supported or the package is missing
 func getPackageMetaDir(pkgName string) (string, error) {
-	dirInfo, err := ioutil.ReadDir(config.PythonLibPath)
+	dirInfo, err := os.ReadDir(config.PythonLibPath)
 	if err != nil {
 		return "", err
 	}
 	pkgName = formatName(pkgName)
 
 	for _, dir := range dirInfo {
-		curPkgName, v, format := parseDirectoryName(dir.Name())
-		if formatName(curPkgName) == pkgName && v != "" {
-			// FIXME: if we find egg info first, an error will immediately return
-			if format != "dist-info" { // not wheel
-				return "", UnsupportedFormat
-			}
+		curPkgName, _, format := parseDirectoryName(dir.Name())
+		if formatName(curPkgName) == pkgName && format == "dist-info" {
 			return dir.Name(), nil
 		}
 	}
