@@ -26,7 +26,7 @@ func getPythonVersion() string {
 	if err != nil {
 		log.Fatal("Unable to get python version. Does python exists?")
 	}
-	return string(output)[7:]
+	return string(output[7 : len(output)-2]) // cut off the word "Python" and the last two special characters "\r\n"
 }
 
 func checkVirtualEnv() string {
