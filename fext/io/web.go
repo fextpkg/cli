@@ -41,6 +41,20 @@ func getPackageList(name string) (*html.Node, error) {
 	return doc, nil
 }
 
+func compareVersion(version string, operators [][]string) (bool, error) {
+	for _, op := range operators {
+		ok, err := utils.CompareVersion(version, op[0], op[1])
+		//fmt.Println(version, op[0], op[1], ok)
+		if !ok {
+			if err != nil {
+				return false, err
+			}
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
 // Parse document and select optimal version. Returns version and link to download
 func selectAppropriateVersion(doc *html.Node, op [][]string) (string, string, error) {
 	// html => body (on pypi)
@@ -60,8 +74,7 @@ func selectAppropriateVersion(doc *html.Node, op [][]string) (string, string, er
 		}
 		pkgVersion := strings.Split(fullData, "-")[1] // [name, version, ...]
 
-		var link string
-		var versionClassifiers []string
+		var link, versionClassifiers string
 		for _, attr := range node.Attr {
 			switch attr.Key {
 			case "href":
@@ -69,32 +82,25 @@ func selectAppropriateVersion(doc *html.Node, op [][]string) (string, string, er
 			case "data-requires-python":
 				// remove this parts, because it's works fine without it
 				attr.Val = strings.ReplaceAll(attr.Val, ".*", "")
-				versionClassifiers = strings.Split(attr.Val, ", ")
+				versionClassifiers = attr.Val
 			}
 		}
 
-		hasNoOk := false // flag used for continue parent loop
-		// if user specified compare operator
-		for _, op := range op {
-			ok, err := utils.CompareVersion(pkgVersion, op[0], op[1]) // [op, version]
+		ok, err := compareVersion(pkgVersion, op)
+		if !ok {
 			if err != nil {
 				return "", "", err
-			} else if !ok {
-				hasNoOk = true
-				break
 			}
-		}
-		if hasNoOk {
 			continue
 		}
 
-		for _, classifier := range versionClassifiers {
-			_, op := utils.SplitOperators(classifier)
-			if ok, err := utils.CompareVersion(config.PythonVersion, op[0][0], op[0][1]); !ok {
-				continue
-			} else if err != nil {
+		_, classifiers := utils.SplitOperators(versionClassifiers)
+		ok, err = compareVersion(config.PythonVersion, classifiers)
+		if !ok {
+			if err != nil {
 				return "", "", err
 			}
+			continue
 		}
 		return pkgVersion, link, nil
 	}
