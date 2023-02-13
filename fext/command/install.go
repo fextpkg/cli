@@ -84,9 +84,7 @@ func getExtraPackages(pkgName string, extraNames []string) ([]string, error) {
 func install(pkgName string, silent bool) error {
 	pkgName, operators := utils.SplitOperators(pkgName)
 
-	if !silent {
-		progressBar.UpdateStatus("Scanning", pkgName)
-	}
+	progressBar.UpdateStatus("Scanning", pkgName)
 	version, link, err := io.GetAppropriatePackageLink(pkgName, operators)
 	if err != nil {
 		return err
@@ -101,17 +99,13 @@ func install(pkgName string, silent bool) error {
 		}
 	}
 
-	if !silent {
-		progressBar.UpdateStatus("Downloading", pkgName)
-	}
+	progressBar.UpdateStatus("Downloading", pkgName)
 	filePath, err := io.DownloadPackage(link)
 	if err != nil {
 		return err
 	}
 
-	if !silent {
-		progressBar.UpdateStatus("Extracting", pkgName)
-	}
+	progressBar.UpdateStatus("Extracting", pkgName)
 	if err = io.ExtractPackage(filePath); err != nil {
 		return err
 	}
@@ -125,15 +119,15 @@ func install(pkgName string, silent bool) error {
 		return err
 	}
 
-	if !silent {
+	if !optSingle {
 		progressBar.UpdateStatus("Installing dependencies")
-	}
-	for _, dep := range p.Dependencies {
-		err = install(fmt.Sprint(dep.Name, dep.Conditions), true)
-		//fmt.Println("name:", dep.Name, "cond:", dep.Conditions, "err:", err)
-		if err != nil && err != packageAlreadyInstalled {
-			progressBar.Println(fmt.Sprintf("- %s (%s) (%v)", dep.Name, pkgName, err))
+		for _, dep := range p.Dependencies {
+			err = install(fmt.Sprint(dep.Name, dep.Conditions), true)
+			if err != nil && err != packageAlreadyInstalled {
+				progressBar.Println(fmt.Sprintf("- %s (%s) (%v)", dep.Name, pkgName, err))
+			}
 		}
+
 	}
 
 	return nil
