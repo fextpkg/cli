@@ -4,58 +4,112 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
-// Need for correct check, cause version can have two or more digits in section
-func equateVersions(v1, v2 string) (a, b string) {
-	v1l := len(v1)
-	v2l := len(v2)
+func parseVersion(s string) ([3]int, int, error) {
+	var output [3]int
+	var pre int
+	parts := strings.Split(s, ".")
+	length := len(parts)
 
-	// make strings of same length
-	if v1l > v2l {
-		v2 += strings.Repeat("0", v1l - v2l)
-	} else if v2l > v1l {
-		v1 += strings.Repeat("0", v2l - v1l)
-	}
-
-	return v1, v2
-}
-
-// Returns versions (E.g. 4.0.0a0 => 40010)
-func parseAndEquateVersions(rawv1, rawv2 string) (int, int) {
-	a := strings.Split(rawv1, ".")
-	b := strings.Split(rawv2, ".")
-	var v1, v2 string
-	var s1, s2 string // tmp values
-	minLength := FindMinValue([]int{len(a), len(b)}) // drop part with more length
-
-	for i := 0; i < minLength; i++ {
-		// try to convert to int, and if it success we skip part with letters
-		s1 = a[i]
-		s2 = b[i]
-		if _, err := strconv.Atoi(s1 + s2); err != nil {
-			// convert part with letters to int
-			s1, s2 = convertLettersToIntString(s1), convertLettersToIntString(s2)
+	for i := 0; i < 3; i++ {
+		if i < length {
+			value := parts[i]
+			intValue, err := strconv.Atoi(value)
+			if err != nil { // string contains characters
+				intValue, pre, err = parsePreVersion(value)
+				if err != nil {
+					return output, 0, err
+				}
+			}
+			output[i] = intValue
+		} else {
+			output[i] = 0
 		}
-
-		s1, s2 = equateVersions(s1, s2)
-		v1 += s1
-		v2 += s2
 	}
 
-	// skip errors cause above we check it
-	v1c, _ := strconv.Atoi(v1)
-	v2c, _ := strconv.Atoi(v2)
-
-	return v1c, v2c
+	return output, pre, nil
 }
 
-/* compare <a> <operator> <b> and return bool result
-For example: ("4.0.0a", "<=", "4.0.0") = (400, "<=", 400) => true
-WARNING: Letters are also integers, starts with 1 */
-func CompareVersion(a, operator, b string) (bool, error) {
-	v1, v2 := parseAndEquateVersions(a, b)
-	return compare(v1, v2, operator)
+func parsePreVersion(s string) (int, int, error) {
+	var patchValue, preValue int
+	var err error
+	for i, v := range s {
+		if !unicode.IsDigit(v) { // find first character
+			patchValue, err = strconv.Atoi(s[:i]) // cut part with characters and convert
+			if err != nil {                       // unknown error
+				return 0, 0, err
+			}
+			preValue, err = convertPreToInt(s[i:]) // convert part with characters
+			if err != nil {
+				return 0, 0, err
+			}
+			break
+		}
+	}
+	return patchValue, preValue, nil
+}
+
+func convertPreToInt(s string) (int, error) {
+	var output int
+	for _, v := range s {
+		output += int(v)
+	}
+	return output, nil
+}
+
+func compareVersion(a, b string) (int, error) {
+	v1, v1pre, err := parseVersion(a)
+	if err != nil {
+		return 0, err
+	}
+	v2, v2pre, err := parseVersion(b)
+	if err != nil {
+		return 0, err
+	}
+	for i := 0; i < 2; i++ { // compare major, minor and patch version
+		if v1[i] > v2[i] {
+			return 1, nil
+		} else if v2[i] > v1[i] {
+			return -1, nil
+		}
+	}
+
+	if v1pre > v2pre {
+		if v2pre == 0 {
+			return -1, nil
+		}
+		return 1, nil
+	} else if v2pre > v1pre {
+		if v1pre == 0 {
+			return 1, nil
+		}
+		return -1, nil
+	}
+
+	return 0, nil
+}
+
+func CompareVersion(v1, op, v2 string) (bool, error) {
+	res, err := compareVersion(v1, v2)
+	if err != nil {
+		return false, err
+	}
+	if res < 0 {
+		if op == "<" || op == "<=" {
+			return true, nil
+		}
+	} else if res > 0 {
+		if op == ">" || op == ">=" {
+			return true, nil
+		}
+	} else {
+		if op == "==" || op == ">=" || op == "<=" {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // Split name, operator and version. Returns [][]string{operator, version} if operator was split successful

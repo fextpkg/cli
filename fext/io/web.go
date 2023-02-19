@@ -44,7 +44,6 @@ func getPackageList(name string) (*html.Node, error) {
 func compareVersion(version string, operators [][]string) (bool, error) {
 	for _, op := range operators {
 		ok, err := utils.CompareVersion(version, op[0], op[1])
-		//fmt.Println(version, op[0], op[1], ok)
 		if !ok {
 			if err != nil {
 				return false, err
