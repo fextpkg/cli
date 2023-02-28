@@ -41,7 +41,7 @@ func parsePreVersion(s string) (int, int, error) {
 			if err != nil {                       // unknown error
 				return 0, 0, err
 			}
-			preValue, err = convertPreToInt(s[i:]) // convert part with characters
+			preValue, err = convertStrToInt(s[i:]) // convert part with characters
 			if err != nil {
 				return 0, 0, err
 			}
@@ -51,7 +51,7 @@ func parsePreVersion(s string) (int, int, error) {
 	return patchValue, preValue, nil
 }
 
-func convertPreToInt(s string) (int, error) {
+func convertStrToInt(s string) (int, error) {
 	var output int
 	for _, v := range s {
 		output += int(v)
@@ -68,7 +68,8 @@ func compareVersion(a, b string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	for i := 0; i < 2; i++ { // compare major, minor and patch version
+
+	for i := 0; i < 3; i++ { // compare major, minor and patch version
 		if v1[i] > v2[i] {
 			return 1, nil
 		} else if v2[i] > v1[i] {
@@ -76,16 +77,12 @@ func compareVersion(a, b string) (int, error) {
 		}
 	}
 
-	if v1pre > v2pre {
-		if v2pre == 0 {
+	if v1pre&v2pre != 0 {
+		if v1pre > v2pre {
+			return 1, nil
+		} else if v2pre > v1pre {
 			return -1, nil
 		}
-		return 1, nil
-	} else if v2pre > v1pre {
-		if v1pre == 0 {
-			return 1, nil
-		}
-		return -1, nil
 	}
 
 	return 0, nil
