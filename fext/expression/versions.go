@@ -111,18 +111,9 @@ func CompareVersion(v1, op, v2 string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if res < 0 {
-		if op == "<" || op == "<=" {
-			return true, nil
-		}
-	} else if res > 0 {
-		if op == ">" || op == ">=" {
-			return true, nil
-		}
-	} else {
-		if op == "==" || op == ">=" || op == "<=" {
-			return true, nil
-		}
+	_op := op[0]
+	if (_op == '<' && res < 0) || (_op == '>' && res > 0) || (_op == '=' && res == 0) || (_op == '!' && res != 0) {
+		return true, nil
 	}
 	return false, nil
 }
