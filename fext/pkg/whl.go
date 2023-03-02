@@ -3,7 +3,7 @@ package pkg
 import (
 	"fmt"
 	"github.com/fextpkg/cli/fext/config"
-	"github.com/fextpkg/cli/fext/utils"
+	"github.com/fextpkg/cli/fext/expression"
 	"os"
 	"path/filepath"
 
@@ -179,7 +179,7 @@ type extra struct {
 // specified markers. Returns an error if parsing failed
 func (e *extra) CheckMarkers() (bool, error) {
 	// TODO move marker replaces from markers module to this func
-	return utils.CompareExpression(e.markers)
+	return expression.CompareExpression(e.markers)
 }
 
 // formatName formats the directory name to a single view

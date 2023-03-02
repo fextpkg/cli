@@ -2,7 +2,7 @@ package io
 
 import (
 	"github.com/fextpkg/cli/fext/config"
-	"github.com/fextpkg/cli/fext/utils"
+	"github.com/fextpkg/cli/fext/expression"
 
 	"errors"
 	"io"
@@ -43,7 +43,7 @@ func getPackageList(name string) (*html.Node, error) {
 
 func compareVersion(version string, operators [][]string) (bool, error) {
 	for _, op := range operators {
-		ok, err := utils.CompareVersion(version, op[0], op[1])
+		ok, err := expression.CompareVersion(version, op[0], op[1])
 		if !ok {
 			if err != nil {
 				return false, err
@@ -93,7 +93,7 @@ func selectAppropriateVersion(doc *html.Node, op [][]string) (string, string, er
 			continue
 		}
 
-		_, classifiers := utils.SplitOperators(versionClassifiers)
+		_, classifiers := expression.ParseExpression(versionClassifiers)
 		ok, err = compareVersion(config.PythonVersion, classifiers)
 		if !ok {
 			if err != nil {

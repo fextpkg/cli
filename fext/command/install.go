@@ -4,10 +4,10 @@ import (
 	"errors"
 	fmt "fmt"
 	"github.com/fextpkg/cli/fext/config"
+	"github.com/fextpkg/cli/fext/expression"
 	"github.com/fextpkg/cli/fext/io"
 	"github.com/fextpkg/cli/fext/pkg"
 	"github.com/fextpkg/cli/fext/ui"
-	"github.com/fextpkg/cli/fext/utils"
 	"os"
 	"strings"
 )
@@ -82,7 +82,7 @@ func getExtraPackages(pkgName string, extraNames []string) ([]string, error) {
 }
 
 func install(pkgName string, silent bool) error {
-	pkgName, operators := utils.SplitOperators(pkgName)
+	pkgName, operators := expression.ParseExpression(pkgName)
 
 	progressBar.UpdateStatus("Scanning", pkgName)
 	version, link, err := io.GetAppropriatePackageLink(pkgName, operators)
