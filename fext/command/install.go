@@ -2,10 +2,11 @@ package command
 
 import (
 	"errors"
-	fmt "fmt"
+	"fmt"
 	"github.com/fextpkg/cli/fext/config"
 	"github.com/fextpkg/cli/fext/expression"
 	"github.com/fextpkg/cli/fext/io"
+	"github.com/fextpkg/cli/fext/io/web"
 	"github.com/fextpkg/cli/fext/pkg"
 	"github.com/fextpkg/cli/fext/ui"
 	"os"
@@ -82,10 +83,12 @@ func getExtraPackages(pkgName string, extraNames []string) ([]string, error) {
 }
 
 func install(pkgName string, silent bool) error {
-	pkgName, operators := expression.ParseExpression(pkgName)
+	pkgName, op := expression.ParseExpression(pkgName)
+	web := web.NewRequest(pkgName, op)
 
 	progressBar.UpdateStatus("Scanning", pkgName)
-	version, link, err := io.GetAppropriatePackageLink(pkgName, operators)
+	//progressBar.UpdateStatus("Scanning", pkgName)
+	version, link, err := web.GetPackageData()
 	if err != nil {
 		return err
 	}
@@ -100,7 +103,7 @@ func install(pkgName string, silent bool) error {
 	}
 
 	progressBar.UpdateStatus("Downloading", pkgName)
-	filePath, err := io.DownloadPackage(link)
+	filePath, err := web.DownloadPackage(link)
 	if err != nil {
 		return err
 	}

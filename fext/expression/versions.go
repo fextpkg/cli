@@ -111,16 +111,19 @@ func CompareVersion(v1, op, v2 string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	_op := op[0]
-	if (_op == '<' && res < 0) || (_op == '>' && res > 0) || (_op == '=' && res == 0) || (_op == '!' && res != 0) {
+	if res < 0 && (op == "<" || op == "<=" || op == "!=") {
+		return true, nil
+	} else if res > 0 && (op == ">" || op == ">=" || op == "!=") {
+		return true, nil
+	} else if res == 0 && (op == "==" || op == ">=" || op == "<=") {
 		return true, nil
 	}
 	return false, nil
 }
 
-// SplitOperators split name, operator and version. Returns name,
+// ParseExpression split name, operator and version. Returns name,
 // [][]string{operator, version}
-func SplitOperators(name string) (string, [][]string) {
+func ParseExpression(name string) (string, [][]string) {
 	var operators [][]string
 	// parse operators and split them. E.g. "name<=4.0.0 >=4.0.0" => [[<=, 4.0.0], [>=, 4.0.0]]
 	// NOTE: separator can be anything, and it also may not exist
@@ -132,7 +135,7 @@ func SplitOperators(name string) (string, [][]string) {
 	}
 
 	// split name
-	re, _ = regexp.Compile(`[\w|\-]+`)
+	re, _ = regexp.Compile(`[\w|\-.]+`)
 	name = re.FindString(name)
 
 	return name, operators
