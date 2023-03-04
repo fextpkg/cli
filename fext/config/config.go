@@ -12,8 +12,8 @@ const (
 )
 
 var (
-	PythonVersion string = getPythonVersion()
-	PythonLibPath string = getPythonLib() // Path to python packages directory
+	PythonVersion = getPythonVersion()
+	PythonLibPath = getPythonLib() // Path to python packages directory
 
 	virtualEnv bool
 
@@ -50,10 +50,6 @@ func parseArguments(args []string) ([]string, []string) {
 	var flags, command []string
 	for _, v := range args {
 		cutString, isCommand := cutQueryString(v)
-		//// prevent empty string append
-		//if cutString == "" {
-		//	continue
-		//}
 		if isCommand {
 			command = append(command, cutString)
 		} else {
