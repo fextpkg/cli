@@ -1,10 +1,9 @@
-package io
+package web
 
 import (
+	"errors"
 	"github.com/fextpkg/cli/fext/config"
 	"github.com/fextpkg/cli/fext/expression"
-
-	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -13,17 +12,22 @@ import (
 	"golang.org/x/net/html"
 )
 
-func GetAppropriatePackageLink(pkgName string, op [][]string) (string, string, error) {
-	doc, err := getPackageList(pkgName)
+type PyPi struct {
+	pkgName string
+	op      [][]string
+}
+
+func (web *PyPi) GetPackageData() (string, string, error) {
+	doc, err := web.getPackageList()
 	if err != nil {
 		return "", "", err
 	}
 
-	return selectAppropriateVersion(doc, op)
+	return web.selectAppropriateVersion(doc)
 }
 
-func getPackageList(name string) (*html.Node, error) {
-	resp, err := http.Get("https://pypi.org/simple/" + name + "/")
+func (web *PyPi) getPackageList() (*html.Node, error) {
+	resp, err := http.Get("https://pypi.org/simple/" + web.pkgName + "/")
 	if err != nil {
 		return nil, err
 	}
@@ -41,21 +45,8 @@ func getPackageList(name string) (*html.Node, error) {
 	return doc, nil
 }
 
-func compareVersion(version string, operators [][]string) (bool, error) {
-	for _, op := range operators {
-		ok, err := expression.CompareVersion(version, op[0], op[1])
-		if !ok {
-			if err != nil {
-				return false, err
-			}
-			return false, nil
-		}
-	}
-	return true, nil
-}
-
 // Parse document and select optimal version. Returns version and link to download
-func selectAppropriateVersion(doc *html.Node, op [][]string) (string, string, error) {
+func (web *PyPi) selectAppropriateVersion(doc *html.Node) (string, string, error) {
 	// html => body (on pypi)
 	startNode := doc.FirstChild.NextSibling.FirstChild.NextSibling.NextSibling.LastChild
 	var fullData string
@@ -71,7 +62,7 @@ func selectAppropriateVersion(doc *html.Node, op [][]string) (string, string, er
 		if !strings.HasSuffix(fullData, ".whl") {
 			continue
 		}
-		pkgVersion := strings.Split(fullData, "-")[1] // [name, version, ...]
+		pkgData := strings.Split(fullData, "-") // [name, version, [,build-tag] py-tag, abi-tag, platform-tag]
 
 		var link, versionClassifiers string
 		for _, attr := range node.Attr {
@@ -85,7 +76,7 @@ func selectAppropriateVersion(doc *html.Node, op [][]string) (string, string, er
 			}
 		}
 
-		ok, err := compareVersion(pkgVersion, op)
+		ok, err := compareVersion(pkgData[1], web.op)
 		if !ok {
 			if err != nil {
 				return "", "", err
@@ -101,13 +92,18 @@ func selectAppropriateVersion(doc *html.Node, op [][]string) (string, string, er
 			}
 			continue
 		}
-		return pkgVersion, link, nil
+
+		if !checkPlatformCompatibility(pkgData) {
+			continue
+		}
+
+		return pkgData[1], link, nil
 	}
 
 	return "", "", errors.New("no matching version was found")
 }
 
-func DownloadPackage(link string) (string, error) {
+func (web *PyPi) DownloadPackage(link string) (string, error) {
 	hashSum := strings.Split(link, "sha256=")[1]
 
 	resp, err := http.Get(link)
@@ -128,4 +124,35 @@ func DownloadPackage(link string) (string, error) {
 	}
 
 	return tmpFile.Name(), nil
+}
+
+func NewRequest(pkgName string, op [][]string) *PyPi {
+	return &PyPi{
+		pkgName: pkgName,
+		op:      op,
+	}
+}
+
+func compareVersion(version string, operators [][]string) (bool, error) {
+	for _, op := range operators {
+		ok, err := expression.CompareVersion(version, op[0], op[1])
+		if !ok {
+			if err != nil {
+				return false, err
+			}
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+func checkPlatformCompatibility(pkgData []string) bool {
+	var platformTag string
+	if len(pkgData) == 6 {
+		platformTag = pkgData[5]
+	} else {
+		platformTag = pkgData[4]
+	}
+	platformTag = platformTag[:len(platformTag)-4]
+	return platformTag == "any" || checkCompatibility(platformTag)
 }
