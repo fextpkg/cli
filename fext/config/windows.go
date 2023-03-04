@@ -6,6 +6,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 const (
@@ -19,7 +20,10 @@ func getPythonLib() string {
 		panic(err)
 	}
 	// TODO venv support
-	// FIXME: 3.7.0 => 7. || 3.10.0 => 10 (remove dot)
-	// Trim the first 2 characters and leave 2 after them (3.10.0 => 10). Python directory contains only major version
-	return fmt.Sprintf("%s\\Python\\Python3%s\\site-packages\\", pathToAppData, PythonVersion[2:][:2])
+	// Python directory contains only minor version
+	return fmt.Sprintf(
+		"%s\\Python\\Python3%s\\site-packages\\",
+		pathToAppData,
+		strings.Split(PythonVersion, ".")[1],
+	)
 }
