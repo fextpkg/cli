@@ -106,7 +106,7 @@ func (p *Package) parseMetaData() error {
 func (p *Package) getTopLevel() ([]string, error) {
 	var packages []string
 	data, err := os.ReadFile(getAbsolutePath(p.metaDir, "top_level.txt"))
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
+	if err != nil {
 		return nil, err
 	}
 
@@ -114,9 +114,25 @@ func (p *Package) getTopLevel() ([]string, error) {
 	return packages[:len(packages)-1], nil // cut last element cause it emptiness
 }
 
+// getSourceDirs returns a list of directories with source code
+func (p *Package) getSourceDirs() ([]string, error) {
+	packages, err := p.getTopLevel()
+	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			return nil, err
+		}
+		// additionally, we check the presence of the source code folder, since some
+		// generators do not add the top_level.txt file
+		if _, err = os.Stat(getAbsolutePath(p.Name, "")); err == nil {
+			packages = []string{p.Name}
+		}
+	}
+	return packages, nil
+}
+
 // Uninstall deletes all folders and files associated with this package
 func (p *Package) Uninstall() error {
-	packages, err := p.getTopLevel()
+	packages, err := p.getSourceDirs()
 	if err != nil {
 		return err
 	}
@@ -143,11 +159,11 @@ func (p *Package) Uninstall() error {
 
 // GetSize calculate all size of files in directory with source code. Returns size in bytes
 func (p *Package) GetSize() (int64, error) {
-	packages, err := p.getTopLevel()
+	packages, err := p.getSourceDirs()
 	if err != nil {
 		return 0, err
 	} else if len(packages) == 0 { // this is not a package but a module
-		f, err := os.Stat(fmt.Sprintf("%s/%s.py", config.PythonLibPath, formatName(p.Name)))
+		f, err := os.Stat(getAbsolutePath("", formatName(p.Name)+".py"))
 		if err != nil {
 			return 0, err
 		} else {
