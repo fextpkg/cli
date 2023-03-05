@@ -1,10 +1,10 @@
 package ui
 
 import (
+	"fmt"
+
 	"github.com/fextpkg/cli/fext/color"
 	"github.com/fextpkg/cli/fext/config"
-
-	"fmt"
 )
 
 // PrintHelp prints main help info

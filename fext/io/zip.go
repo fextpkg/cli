@@ -1,12 +1,12 @@
 package io
 
 import (
-	"github.com/fextpkg/cli/fext/config"
-
 	"archive/zip"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/fextpkg/cli/fext/config"
 )
 
 func unzip(path string) error {

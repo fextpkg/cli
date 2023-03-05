@@ -1,14 +1,14 @@
 package pkg
 
 import (
+	"errors"
 	"fmt"
-	"github.com/fextpkg/cli/fext/config"
-	"github.com/fextpkg/cli/fext/expression"
 	"os"
 	"path/filepath"
-
-	"errors"
 	"strings"
+
+	"github.com/fextpkg/cli/fext/config"
+	"github.com/fextpkg/cli/fext/expression"
 )
 
 var (

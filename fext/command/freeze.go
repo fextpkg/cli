@@ -2,11 +2,12 @@ package command
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/fextpkg/cli/fext/color"
 	"github.com/fextpkg/cli/fext/config"
 	"github.com/fextpkg/cli/fext/pkg"
-	"os"
-	"strings"
 )
 
 func Freeze() {

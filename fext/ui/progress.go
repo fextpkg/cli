@@ -2,9 +2,10 @@ package ui
 
 import (
 	"fmt"
-	"github.com/nathan-fiscaletti/consolesize-go"
 	"strings"
 	"time"
+
+	"github.com/nathan-fiscaletti/consolesize-go"
 )
 
 var syms = [6]string{"   ", "=  ", "== ", "===", " ==", "  ="}

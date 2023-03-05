@@ -2,11 +2,12 @@ package expression
 
 import (
 	"errors"
-	"github.com/fextpkg/cli/fext/config"
 	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/fextpkg/cli/fext/config"
 )
 
 // this functions implemented cause golang not support __eq__ methods as a python

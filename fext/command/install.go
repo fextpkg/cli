@@ -3,14 +3,15 @@ package command
 import (
 	"errors"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/fextpkg/cli/fext/config"
 	"github.com/fextpkg/cli/fext/expression"
 	"github.com/fextpkg/cli/fext/io"
 	"github.com/fextpkg/cli/fext/io/web"
 	"github.com/fextpkg/cli/fext/pkg"
 	"github.com/fextpkg/cli/fext/ui"
-	"os"
-	"strings"
 )
 
 var (
