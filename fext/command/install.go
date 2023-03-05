@@ -15,9 +15,8 @@ import (
 )
 
 var (
-	progressBar *ui.ProgressBar
-	optSingle   bool // without dependencies
-	optSilent   bool
+	optSingle bool // without dependencies
+	optSilent bool
 )
 
 var (
@@ -87,8 +86,6 @@ func install(pkgName string, silent bool) error {
 	pkgName, op := expression.ParseExpression(pkgName)
 	web := web.NewRequest(pkgName, op)
 
-	progressBar.UpdateStatus("Scanning", pkgName)
-	//progressBar.UpdateStatus("Scanning", pkgName)
 	version, link, err := web.GetPackageData()
 	if err != nil {
 		return err
@@ -103,19 +100,17 @@ func install(pkgName string, silent bool) error {
 		}
 	}
 
-	progressBar.UpdateStatus("Downloading", pkgName)
 	filePath, err := web.DownloadPackage(link)
 	if err != nil {
 		return err
 	}
 
-	progressBar.UpdateStatus("Extracting", pkgName)
 	if err = io.ExtractPackage(filePath); err != nil {
 		return err
 	}
 	os.RemoveAll(filePath) // remove tmp file, that was downloaded
 	if !silent {
-		progressBar.Println(fmt.Sprintf("+ %s (%s)", pkgName, version))
+		ui.PrintlnPlus(fmt.Sprintf("%s (%s)", pkgName, version))
 	}
 
 	p, err = pkg.Load(pkgName)
@@ -124,11 +119,10 @@ func install(pkgName string, silent bool) error {
 	}
 
 	if !optSingle {
-		progressBar.UpdateStatus("Installing dependencies")
 		for _, dep := range p.Dependencies {
 			err = install(fmt.Sprint(dep.Name, dep.Conditions), true)
 			if err != nil && err != packageAlreadyInstalled {
-				progressBar.Println(fmt.Sprintf("- %s (%s) (%v)", dep.Name, pkgName, err))
+				ui.PrintlnMinus(fmt.Sprintf("%s (%s) (%v)\n", dep.Name, pkgName, err))
 			}
 		}
 
@@ -153,29 +147,28 @@ func Install(packages []string) {
 		}
 	}
 
-	progressBar = ui.CreateProgressBar()
-	progressBar.UpdateStatus("Parsing packages")
-	progressBar.Start()
+	//progressBar = ui.CreateProgressBar()
+	//progressBar.UpdateStatus("Processing")
+	//progressBar.Start()
 
 	for _, pkgName := range packages {
 		pkgName, extraNames, err := parseExtraNames(pkgName)
 		if err != nil {
-			progressBar.Println(fmt.Sprintf("- %s extras (%v)", pkgName, err))
+			ui.PrintlnMinus(fmt.Sprintf("%s extras (%v)\n", pkgName, err))
 		} else if len(extraNames) > 0 {
 			extraPackages, err := getExtraPackages(pkgName, extraNames)
 			if err != nil {
-				progressBar.Println(fmt.Sprintf("- %s extras (%v)", pkgName, err))
+				ui.PrintlnMinus(fmt.Sprintf("%s extras (%v)\n", pkgName, err))
 			}
 
 			for _, ePkgName := range extraPackages {
 				err = install(ePkgName, optSilent)
 				if err != nil {
-					progressBar.Println(fmt.Sprintf("- %s (%s) (%v)", ePkgName, pkgName, err))
+					ui.PrintlnMinus(fmt.Sprintf("%s (%s) (%v)\n", ePkgName, pkgName, err))
 				}
 			}
 		} else if err = install(pkgName, optSilent); err != nil {
-			progressBar.Println(fmt.Sprintf("- %s (%v)", pkgName, err))
+			ui.PrintlnMinus(fmt.Sprintf("%s (%v)\n", pkgName, err))
 		}
 	}
-	progressBar.Finish("Finished")
 }

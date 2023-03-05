@@ -3,7 +3,6 @@ package ui
 import (
 	"fmt"
 
-	"github.com/fextpkg/cli/fext/color"
 	"github.com/fextpkg/cli/fext/config"
 )
 
@@ -21,7 +20,9 @@ func PrintHelp() {
 // PrintHelpInstall prints install help info
 func PrintHelpInstall() {
 	fmt.Println("Available options:\n",
-		"\t-s, --single - Install single package, without dependencies")
+		"\t-S, --single - Install single package, without dependencies\n",
+		"\t-s, --silent - Output only error messages",
+	)
 }
 
 func PrintHelpUninstall() {
@@ -35,6 +36,6 @@ func PrintDebug() {
 }
 
 func PrintUnknownOption(opt string, call func()) {
-	color.PrintfError("Unknown option: %s\n", opt)
+	PrintfError("Unknown option: %s\n", opt)
 	call()
 }

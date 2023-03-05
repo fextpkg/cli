@@ -2,10 +2,10 @@ package command
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
-	"github.com/fextpkg/cli/fext/color"
 	"github.com/fextpkg/cli/fext/config"
 	"github.com/fextpkg/cli/fext/pkg"
 )
@@ -14,8 +14,7 @@ func Freeze() {
 	files, err := os.ReadDir(config.PythonLibPath)
 
 	if err != nil {
-		color.PrintfError("%s", err.Error())
-		os.Exit(1)
+		log.Fatal(err)
 	}
 
 	var count int

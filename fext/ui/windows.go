@@ -1,12 +1,14 @@
-//+build windows
+//go:build windows
+// +build windows
 
 // NOTE! This file provides support only for windows 10
 
-package color
+package ui
 
 import (
-	"golang.org/x/sys/windows"
 	"os"
+
+	"golang.org/x/sys/windows"
 )
 
 func init() {
