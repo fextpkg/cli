@@ -121,14 +121,14 @@ func CompareVersion(v1, op, v2 string) (bool, error) {
 	return false, nil
 }
 
-// ParseExpression split name, operator and version. Returns name,
+// ParseExpression split package name, operators and versions. Returns pkgName,
 // [][]string{operator, version}
-func ParseExpression(name string) (string, [][]string) {
+func ParseExpression(exp string) (string, [][]string) {
 	var operators [][]string
 	// parse operators and split them. E.g. "name<=4.0.0 >=4.0.0" => [[<=, 4.0.0], [>=, 4.0.0]]
 	// NOTE: separator can be anything, and it also may not exist
-	re, _ := regexp.Compile(`([<>!=]=?)([\d\w\.]+)`)
-	v := re.FindAllStringSubmatch(strings.ReplaceAll(name, " ", ""), -1)
+	re, _ := regexp.Compile(`([<>!=]=?)([\w\.]+)`)
+	v := re.FindAllStringSubmatch(strings.ReplaceAll(exp, " ", ""), -1)
 
 	for _, value := range v {
 		operators = append(operators, value[1:]) // [baseValue, operator, version]
@@ -136,7 +136,5 @@ func ParseExpression(name string) (string, [][]string) {
 
 	// split name
 	re, _ = regexp.Compile(`[\w|\-.]+`)
-	name = re.FindString(name)
-
-	return name, operators
+	return re.FindString(exp), operators
 }
