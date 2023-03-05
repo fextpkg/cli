@@ -15,15 +15,13 @@ func uninstall(pkgName string) error {
 	if err != nil {
 		return err
 	}
-	if err = p.Uninstall(); err != nil {
-		return err
-	}
+
 	if optCollectDep {
 		for _, dep := range p.Dependencies {
 			uninstall(dep.Name)
 		}
 	}
-	return nil
+	return p.Uninstall()
 }
 
 func Uninstall(packages []string) {
