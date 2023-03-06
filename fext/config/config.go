@@ -12,10 +12,9 @@ const (
 )
 
 var (
-	PythonVersion = getPythonVersion()
-	PythonLibPath = getPythonLib() // Path to python packages directory
-
-	virtualEnv bool
+	PythonVersion  = getPythonVersion()
+	PythonLibPath  = getPythonLib() // Path to python packages directory
+	virtualEnvPath = getVirtualEnvPath()
 
 	Command []string // Command and arguments specified by user
 	Flags   []string // Flags specified by user
@@ -29,7 +28,7 @@ func getPythonVersion() string {
 	return string(output[7 : len(output)-2]) // cut off the word "Python" and the last two special characters "\r\n"
 }
 
-func checkVirtualEnv() string {
+func getVirtualEnvPath() string {
 	return os.Getenv("VIRTUAL_ENV")
 }
 
@@ -60,11 +59,6 @@ func parseArguments(args []string) ([]string, []string) {
 }
 
 func init() {
-	venvPath := checkVirtualEnv()
-	if venvPath != "" { // venv enabled
-		virtualEnv = true
-	}
-
 	if _, err := os.Stat(PythonLibPath); err != nil && os.IsNotExist(err) {
 		if err = os.MkdirAll(PythonLibPath, DefaultChmod); err != nil {
 			log.Fatal(err)
