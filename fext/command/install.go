@@ -147,10 +147,6 @@ func Install(packages []string) {
 		}
 	}
 
-	//progressBar = ui.CreateProgressBar()
-	//progressBar.UpdateStatus("Processing")
-	//progressBar.Start()
-
 	for _, pkgName := range packages {
 		pkgName, extraNames, err := parseExtraNames(pkgName)
 		if err != nil {

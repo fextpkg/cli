@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/fextpkg/cli/fext/command"
 	"github.com/fextpkg/cli/fext/config"
 	"github.com/fextpkg/cli/fext/ui"
