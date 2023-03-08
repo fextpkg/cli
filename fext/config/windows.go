@@ -1,12 +1,10 @@
 //go:build windows
-// +build windows
 
 package config
 
 import (
 	"fmt"
 	"os"
-	"strings"
 )
 
 const (
@@ -21,9 +19,5 @@ func getPythonLib() string {
 	}
 	// TODO venv support
 	// Python directory contains only minor version
-	return fmt.Sprintf(
-		"%s\\Python\\Python3%s\\site-packages\\",
-		pathToAppData,
-		strings.Split(PythonVersion, ".")[1],
-	)
+	return fmt.Sprintf("%s\\Python\\Python3%s\\site-packages\\", pathToAppData, getPythonMinorVersion())
 }

@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 const (
@@ -25,7 +26,11 @@ func getPythonVersion() string {
 	if err != nil {
 		log.Fatal("Unable to get python version. Does python exists?")
 	}
-	return string(output[7 : len(output)-2]) // cut off the word "Python" and the last two special characters "\r\n"
+	return string(output[7 : len(output)-1]) // cut off the word "Python" and the last two special characters "\r\n"
+}
+
+func getPythonMinorVersion() string {
+	return strings.Split(PythonVersion, ".")[1]
 }
 
 func getVirtualEnvPath() string {
