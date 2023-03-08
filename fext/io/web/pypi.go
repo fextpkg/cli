@@ -65,11 +65,12 @@ func (web *PyPi) selectAppropriateVersion(doc *html.Node) (string, string, error
 		}
 
 		pkgData := strings.Split(fullData, "-") // [name, version, [,build-tag] py-tag, abi-tag, platform-tag]
-		if !checkPlatformCompatibility(pkgData) {
+		ok, err := checkPlatformCompatibility(pkgData)
+		if !ok {
 			continue
 		}
 
-		ok, err := compareVersion(pkgData[1], web.op)
+		ok, err = compareVersion(pkgData[1], web.op)
 		if !ok {
 			if err != nil {
 				return "", "", err
@@ -151,7 +152,7 @@ func compareVersion(version string, operators [][]string) (bool, error) {
 	return true, nil
 }
 
-func checkPlatformCompatibility(pkgData []string) bool {
+func checkPlatformCompatibility(pkgData []string) (bool, error) {
 	var platformTag string
 	if len(pkgData) == 6 { // have additional build tag
 		platformTag = pkgData[5]
@@ -159,5 +160,8 @@ func checkPlatformCompatibility(pkgData []string) bool {
 		platformTag = pkgData[4]
 	}
 	platformTag = platformTag[:len(platformTag)-4] // remove ".whl"
-	return platformTag == "any" || checkCompatibility(platformTag)
+	if platformTag == "any" {
+		return true, nil
+	}
+	return checkCompatibility(platformTag)
 }
