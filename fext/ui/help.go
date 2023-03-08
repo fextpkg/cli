@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/fextpkg/cli/fext/config"
 )
@@ -32,7 +33,13 @@ func PrintHelpUninstall() {
 
 // PrintDebug prints debug info
 func PrintDebug() {
-	fmt.Printf("Fext (%s)\n\nLinked to: %s\n", config.Version, config.PythonLibPath)
+	fmt.Printf(
+		"Fext (%s)\n\nLinked to: %s\nOS: %s, arch: %s\n",
+		config.Version,
+		config.PythonLibPath,
+		runtime.GOOS,
+		runtime.GOARCH,
+	)
 }
 
 func PrintUnknownOption(opt string, call func()) {
