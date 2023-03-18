@@ -9,7 +9,7 @@ import (
 
 const (
 	Version      = "0.1.0"
-	DefaultChmod = 0775
+	DefaultChmod = 0755
 )
 
 var (
