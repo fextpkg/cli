@@ -13,9 +13,10 @@ const (
 )
 
 var (
+	virtualEnvPath = getVirtualEnvPath()
+	pythonExec     = getPythonExec()
 	PythonVersion  = getPythonVersion()
 	PythonLibPath  = getPythonLib() // Path to python packages directory
-	virtualEnvPath = getVirtualEnvPath()
 
 	Command []string // Command and arguments specified by user
 	Flags   []string // Flags specified by user
