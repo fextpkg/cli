@@ -26,7 +26,10 @@ func getPythonVersion() string {
 	if err != nil {
 		log.Fatal("Unable to get python version. Does python exists?")
 	}
-	return string(output[7 : len(output)-1]) // cut off the word "Python" and the last two special characters "\r\n"
+	// Cut off the word "Python". We do not clear the last characters of \r\n,
+	// because during version comparing, the strconv function is used, which clears
+	// them itself
+	return string(output[7:])
 }
 
 func getPythonMinorVersion() string {
