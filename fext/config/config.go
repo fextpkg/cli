@@ -43,10 +43,10 @@ func getVirtualEnvPath() string {
 
 // cutQueryString used for removing all invalid dash symbols and
 // to determine what given string is: part of command or flag.
-func cutQueryString(string string) (string, bool) {
-	for i, c := range string {
+func cutQueryString(s string) (string, bool) {
+	for i, c := range s {
 		if c != '-' {
-			return string[i:], i == 0
+			return s[i:], i == 0
 		}
 	}
 	return "", true
