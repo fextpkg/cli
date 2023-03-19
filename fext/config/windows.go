@@ -12,11 +12,11 @@ const (
 )
 
 func getPythonExec() string {
-	if virtualEnvPath != "" {
-		return virtualEnvPath + "\\Scripts\\python"
-	} else {
-		return "python"
-	}
+	return "python"
+}
+
+func getPythonVenvExec() string {
+	return virtualEnvPath + "\\Scripts\\python"
 }
 
 func getPythonLib() string {
@@ -24,10 +24,10 @@ func getPythonLib() string {
 	if err != nil {
 		panic(err)
 	}
-	if virtualEnvPath != "" {
-		return virtualEnvPath + "\\Lib\\site-packages\\"
-	} else {
-		// Python directory contains only minor version
-		return fmt.Sprintf("%s\\Python\\Python3%s\\site-packages\\", pathToAppData, getPythonMinorVersion())
-	}
+	// Python directory contains only minor version
+	return fmt.Sprintf("%s\\Python\\Python3%s\\site-packages\\", pathToAppData, getPythonMinorVersion())
+}
+
+func getPythonVenvLib() string {
+	return virtualEnvPath + "\\Lib\\site-packages\\"
 }

@@ -14,9 +14,10 @@ const (
 
 var (
 	virtualEnvPath = getVirtualEnvPath()
-	pythonExec     = getPythonExec()
-	PythonVersion  = getPythonVersion()
-	PythonLibPath  = getPythonLib() // Path to python packages directory
+
+	pythonExec    string // Path to python executor
+	PythonVersion string
+	PythonLibPath string // Path to python packages directory
 
 	Command []string // Command and arguments specified by user
 	Flags   []string // Flags specified by user
@@ -68,6 +69,19 @@ func parseArguments(args []string) ([]string, []string) {
 }
 
 func init() {
+	// Fill in the variables based on whether the virtual environment is enabled
+	if virtualEnvPath != "" {
+		pythonExec = getPythonVenvExec()
+		PythonVersion = getPythonVersion()
+		PythonLibPath = getPythonVenvLib()
+	} else {
+		pythonExec = getPythonExec()
+		PythonVersion = getPythonVersion()
+		PythonLibPath = getPythonLib()
+	}
+
+	// Check the presence of python library directory in the system. if not exits,
+	// then try to create
 	if _, err := os.Stat(PythonLibPath); err != nil && os.IsNotExist(err) {
 		if err = os.MkdirAll(PythonLibPath, DefaultChmod); err != nil {
 			log.Fatal(err)

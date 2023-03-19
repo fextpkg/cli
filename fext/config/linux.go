@@ -16,11 +16,11 @@ const (
 var GLibCVersion = C.GoString(C.gnu_get_libc_version())
 
 func getPythonExec() string {
-	if virtualEnvPath != "" {
-		return virtualEnvPath + "/bin/python"
-	} else {
-		return "python3"
-	}
+	return "python3"
+}
+
+func getPythonVenvExec() string {
+	return virtualEnvPath + "/bin/python"
 }
 
 func getPythonLib() string {
@@ -28,10 +28,10 @@ func getPythonLib() string {
 	if err != nil {
 		panic(err)
 	}
-	if virtualEnvPath != "" {
-		return fmt.Sprintf("%s/lib/python3.%s/site-packages/", virtualEnvPath, getPythonMinorVersion())
-	} else {
-		// Python directory contains only minor version
-		return fmt.Sprintf("%s/.local/lib/python3.%s/site-packages/", homePath, getPythonMinorVersion())
-	}
+	// Python directory contains only minor version
+	return fmt.Sprintf("%s/.local/lib/python3.%s/site-packages/", homePath, getPythonMinorVersion())
+}
+
+func getPythonVenvLib() string {
+	return fmt.Sprintf("%s/lib/python3.%s/site-packages/", virtualEnvPath, getPythonMinorVersion())
 }
