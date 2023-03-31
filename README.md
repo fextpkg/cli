@@ -10,10 +10,10 @@ Fext is a modern, small, fast, Go powered package manager for Python.
 - **Backward compatibility.** Every function designed to be compatible with PIP.
 
 ## Installation
-Installation progress is simple.
-All you have to do is use [pip](https://github.com/pypa/pip): 
+You need to download install script and run it: 
 ```bash
-pip install fext-cli
+curl https://cdn.lunte.dev/get-fext.py -o get-fext.py
+python get-fext.py
 ```
 
 ## Basic usage
