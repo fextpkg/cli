@@ -1,5 +1,5 @@
 # Fext
-[![Latest](https://img.shields.io/github/v/release/fextpkg/cli)](https://github.com/fextpkg/cli/releases?latest) [![Gover](https://img.shields.io/github/go-mod/go-version/fextpkg/cli?filename=fext%2Fgo.mod)](https://golang.org/dl/) [![License](https://img.shields.io/github/license/fextpkg/cli)](https://github.com/fextpkg/cli/blob/main/LICENSE)
+[![Latest](https://img.shields.io/github/v/release/fextpkg/cli)](https://github.com/fextpkg/cli/releases?latest) [![Gover](https://img.shields.io/github/go-mod/go-version/fextpkg/cli?filename=fext%2Fgo.mod)](https://golang.org/dl/) [![Go Report Card](https://goreportcard.com/badge/github.com/fextpkg/cli/fext)](https://goreportcard.com/report/github.com/fextpkg/cli/fext) [![License](https://img.shields.io/github/license/fextpkg/cli)](https://github.com/fextpkg/cli/blob/main/LICENSE)
 
 Fext is a modern, small, fast, Go powered package manager for Python.
 
