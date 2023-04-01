@@ -16,10 +16,8 @@ import (
 
 var (
 	optNoDependencies bool // without dependencies
-	optSilent         bool
-)
+	optSilent         bool // output only error messages
 
-var (
 	packageAlreadyInstalled = errors.New("package already installed")
 )
 
@@ -104,10 +102,12 @@ func install(pkgName string, silent bool) error {
 		return err
 	}
 
-	if err = io.ExtractPackage(filePath); err != nil {
+	if io.ExtractPackage(filePath) != nil {
 		return err
 	}
-	os.RemoveAll(filePath) // remove tmp file, that was downloaded
+	if os.RemoveAll(filePath) != nil { // remove tmp file, that was downloaded
+		return err
+	}
 	if !silent {
 		ui.PrintfPlus("%s (%s)\n", pkgName, version)
 	}
