@@ -21,14 +21,14 @@ func PrintHelp() {
 // PrintHelpInstall prints install help info
 func PrintHelpInstall() {
 	fmt.Println("Available options:\n",
-		"\t-S, --single - Install single package, without dependencies\n",
+		"\t-n, --no-dependencies - Install single package, without dependencies\n",
 		"\t-s, --silent - Output only error messages",
 	)
 }
 
 func PrintHelpUninstall() {
 	fmt.Println("Available options:\n",
-		"\t-w, --with-dependencies - Remove dependencies of package also")
+		"\t-d, --dependencies - Remove dependencies of package also")
 }
 
 // PrintDebug prints debug info

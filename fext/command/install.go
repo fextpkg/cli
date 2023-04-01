@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	optSingle bool // without dependencies
-	optSilent bool
+	optNoDependencies bool // without dependencies
+	optSilent         bool
 )
 
 var (
@@ -118,7 +118,7 @@ func install(pkgName string, silent bool) error {
 		return err
 	}
 
-	if !optSingle {
+	if !optNoDependencies {
 		for _, dep := range p.Dependencies {
 			err = install(fmt.Sprint(dep.Name, dep.Conditions), true)
 			if err != nil && err != packageAlreadyInstalled {
@@ -137,8 +137,8 @@ func Install(packages []string) {
 		case "h", "help":
 			ui.PrintHelpInstall()
 			return
-		case "S", "single":
-			optSingle = true
+		case "n", "no-dependencies":
+			optNoDependencies = true
 		case "s", "silent":
 			optSilent = true
 		default:

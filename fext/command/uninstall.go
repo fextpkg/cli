@@ -30,7 +30,7 @@ func Uninstall(packages []string) {
 		case "h", "help":
 			ui.PrintHelpUninstall()
 			return
-		case "w", "with-dependencies":
+		case "d", "dependencies":
 			optCollectDep = true
 		default:
 			ui.PrintUnknownOption(f, ui.PrintHelpUninstall)
