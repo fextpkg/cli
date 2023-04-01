@@ -110,8 +110,8 @@ func (p *Package) getTopLevel() ([]string, error) {
 		return nil, err
 	}
 
-	packages = strings.Split(string(data), "\n")
-	return packages[:len(packages)-1], nil // cut last element cause it emptiness
+	packages = strings.Split(strings.TrimSpace(string(data)), "\n")
+	return packages, nil
 }
 
 // getSourceDirs returns a list of directories with source code
