@@ -130,6 +130,18 @@ func install(pkgName string, silent bool) error {
 	return nil
 }
 
+func getPackagesFromFiles(files []string) ([]string, error) {
+	var packages []string
+	for _, fileName := range files {
+		data, err := os.ReadFile(fileName)
+		if err != nil {
+			return nil, err
+		}
+		packages = append(packages, strings.Split(strings.TrimSpace(string(data)), "\n")...)
+	}
+	return packages, nil
+}
+
 func Install(packages []string) {
 	for _, f := range config.Flags {
 		switch f {
@@ -140,6 +152,12 @@ func Install(packages []string) {
 			optNoDependencies = true
 		case "s", "silent":
 			optSilent = true
+		case "r", "requirements":
+			var err error
+			packages, err = getPackagesFromFiles(packages)
+			if err != nil {
+				ui.PrintlnError("Failed to read file:", err.Error())
+			}
 		default:
 			ui.PrintUnknownOption(f, ui.PrintHelpInstall)
 			return
