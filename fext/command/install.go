@@ -109,7 +109,7 @@ func install(pkgName string, silent bool) error {
 	}
 	os.RemoveAll(filePath) // remove tmp file, that was downloaded
 	if !silent {
-		ui.PrintlnPlus(fmt.Sprintf("%s (%s)", pkgName, version))
+		ui.PrintfPlus("%s (%s)\n", pkgName, version)
 	}
 
 	p, err = pkg.Load(pkgName)
@@ -121,7 +121,7 @@ func install(pkgName string, silent bool) error {
 		for _, dep := range p.Dependencies {
 			err = install(fmt.Sprint(dep.Name, dep.Conditions), true)
 			if err != nil && err != packageAlreadyInstalled {
-				ui.PrintlnMinus(fmt.Sprintf("%s (%s) (%v)\n", dep.Name, pkgName, err))
+				ui.PrintfMinus("%s (%s) (%v)\n", dep.Name, pkgName, err)
 			}
 		}
 
@@ -149,21 +149,21 @@ func Install(packages []string) {
 	for _, pkgName := range packages {
 		pkgName, extraNames, err := parseExtraNames(pkgName)
 		if err != nil {
-			ui.PrintlnMinus(fmt.Sprintf("%s extras (%v)\n", pkgName, err))
+			ui.PrintfMinus("%s extras (%v)\n", pkgName, err)
 		} else if len(extraNames) > 0 {
 			extraPackages, err := getExtraPackages(pkgName, extraNames)
 			if err != nil {
-				ui.PrintlnMinus(fmt.Sprintf("%s extras (%v)\n", pkgName, err))
+				ui.PrintfMinus("%s extras (%v)\n", pkgName, err)
 			}
 
 			for _, ePkgName := range extraPackages {
 				err = install(ePkgName, optSilent)
 				if err != nil {
-					ui.PrintlnMinus(fmt.Sprintf("%s (%s) (%v)\n", ePkgName, pkgName, err))
+					ui.PrintfMinus("%s (%s) (%v)\n", ePkgName, pkgName, err)
 				}
 			}
 		} else if err = install(pkgName, optSilent); err != nil {
-			ui.PrintlnMinus(fmt.Sprintf("%s (%v)\n", pkgName, err))
+			ui.PrintfMinus("%s (%v)\n", pkgName, err)
 		}
 	}
 }

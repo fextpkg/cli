@@ -43,6 +43,6 @@ func PrintDebug() {
 }
 
 func PrintUnknownOption(opt string, call func()) {
-	PrintfError("Unknown option: %s\n", opt)
+	PrintlnError("Unknown option:", opt)
 	call()
 }

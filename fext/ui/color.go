@@ -29,6 +29,28 @@ func colorString(startColor, text string) string {
 	return b.String()
 }
 
+func plusString(text string) string {
+	b := strings.Builder{}
+	b.WriteString(Green)
+	b.WriteString(Bold)
+	b.WriteString("+ ")
+	b.WriteString(Reset)
+	b.WriteString(text)
+
+	return b.String()
+}
+
+func minusString(text string) string {
+	b := strings.Builder{}
+	b.WriteString(Red)
+	b.WriteString(Bold)
+	b.WriteString("- ")
+	b.WriteString(Reset)
+	b.WriteString(text)
+
+	return b.String()
+}
+
 func PrintfOK(text string, args ...interface{}) (int, error) {
 	return fmt.Print(colorString(Green+Bold, fmt.Sprintf(text, args...)))
 }
@@ -37,28 +59,22 @@ func PrintfWarning(text string, args ...interface{}) (int, error) {
 	return fmt.Print(colorString(Orange+Bold, fmt.Sprintf(text, args...)))
 }
 
+func PrintlnError(a ...string) (int, error) {
+	return fmt.Println(colorString(Red+Bold, strings.Join(a, " ")))
+}
+
 func PrintfError(text string, args ...interface{}) (int, error) {
 	return fmt.Print(colorString(Red+Bold, fmt.Sprintf(text, args...)))
 }
 
 func PrintlnPlus(text string) (int, error) {
-	b := strings.Builder{}
-	b.WriteString(Green)
-	b.WriteString(Bold)
-	b.WriteString("+ ")
-	b.WriteString(Reset)
-	b.WriteString(text)
-
-	return fmt.Println(b.String())
+	return fmt.Println(plusString(text))
 }
 
-func PrintlnMinus(text string) (int, error) {
-	b := strings.Builder{}
-	b.WriteString(Red)
-	b.WriteString(Bold)
-	b.WriteString("- ")
-	b.WriteString(Reset)
-	b.WriteString(text)
+func PrintfPlus(text string, args ...interface{}) (int, error) {
+	return fmt.Print(plusString(fmt.Sprintf(text, args...)))
+}
 
-	return fmt.Print(b.String())
+func PrintfMinus(text string, args ...interface{}) (int, error) {
+	return fmt.Print(minusString(fmt.Sprintf(text, args...)))
 }
