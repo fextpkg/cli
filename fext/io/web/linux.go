@@ -14,13 +14,11 @@ func checkCompatibility(platformTag string) (bool, error) {
 	for _, platform := range platforms {
 		if strings.HasPrefix(platform, "manylinux_") {
 			data := strings.SplitN(platform, "_", 4)
-			//fmt.Println("arch:", data[3])
 			if !compareArch(data[3]) {
 				continue
 			}
 			version := strings.Join(data[1:3], ".")
 			res, err := expression.CompareVersion(config.GLibCVersion, ">=", version)
-			//fmt.Println(data, version, "=>", res, err)
 			if err != nil {
 				return false, err
 			} else if res {
