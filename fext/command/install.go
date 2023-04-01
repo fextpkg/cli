@@ -50,8 +50,7 @@ func parseExtraNames(s string) (string, []string, error) {
 		}
 
 		return originalName, extraNames, nil
-		// TODO replace with &
-	} else if startQuote != 0 || endQuote != 0 {
+	} else if startQuote|endQuote != 0 {
 		return s, nil, errors.New("syntax error")
 	}
 
@@ -67,7 +66,7 @@ func getExtraPackages(pkgName string, extraNames []string) ([]string, error) {
 	for _, eName := range extraNames {
 		e, ok := p.Extra[eName]
 		if !ok {
-			return nil, errors.New("extra not found")
+			return nil, errors.New("extra not found: " + eName)
 		}
 		for _, extra := range e {
 			passMarkers, err := extra.CheckMarkers()
