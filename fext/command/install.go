@@ -133,11 +133,11 @@ func install(pkgName string, silent bool) error {
 func getPackagesFromFiles(files []string) ([]string, error) {
 	var packages []string
 	for _, fileName := range files {
-		data, err := os.ReadFile(fileName)
+		p, err := io.ReadLines(fileName)
 		if err != nil {
 			return nil, err
 		}
-		packages = append(packages, strings.Split(strings.TrimSpace(string(data)), "\n")...)
+		packages = append(packages, p...)
 	}
 	return packages, nil
 }

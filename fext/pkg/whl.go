@@ -9,6 +9,7 @@ import (
 
 	"github.com/fextpkg/cli/fext/config"
 	"github.com/fextpkg/cli/fext/expression"
+	"github.com/fextpkg/cli/fext/io"
 )
 
 var (
@@ -104,14 +105,7 @@ func (p *Package) parseMetaData() error {
 // getTopLevel returns the packages names from the file "top_level.txt". This
 // file stores a list of packages that python can work with
 func (p *Package) getTopLevel() ([]string, error) {
-	var packages []string
-	data, err := os.ReadFile(getAbsolutePath(p.metaDir, "top_level.txt"))
-	if err != nil {
-		return nil, err
-	}
-
-	packages = strings.Split(strings.TrimSpace(string(data)), "\n")
-	return packages, nil
+	return io.ReadLines(getAbsolutePath(p.metaDir, "top_level.txt"))
 }
 
 // getSourceDirs returns a list of directories with source code
