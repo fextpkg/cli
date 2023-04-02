@@ -234,8 +234,8 @@ func parseDirectoryName(dirName string) (string, string, string) {
 }
 
 // getPackageMetaDir searches for a folder with wheel format from the specified
-// pkgName. Returns the original directory name. Returns an error if the found
-// format is not supported or the package is missing
+// pkgName. Returns the original directory name. Returns an error if the package
+// is missing
 func getPackageMetaDir(pkgName string) (string, error) {
 	dirInfo, err := os.ReadDir(config.PythonLibPath)
 	if err != nil {
