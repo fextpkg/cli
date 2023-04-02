@@ -123,7 +123,7 @@ func (p *Package) getSourceDirs() ([]string, error) {
 		}
 		// additionally, we check the presence of the source code folder, since some
 		// generators do not add the top_level.txt file
-		if _, err = os.Stat(getAbsolutePath(p.Name, "")); err == nil {
+		if _, err = os.Stat(getAbsolutePath(p.Name)); err == nil {
 			packages = []string{p.Name}
 		}
 	}
@@ -137,9 +137,9 @@ func (p *Package) Uninstall() error {
 		return err
 	}
 
-	removeDir := func(dirName string) error { return os.RemoveAll(getAbsolutePath(dirName, "")) }
+	removeDir := func(dirName string) error { return os.RemoveAll(getAbsolutePath(dirName)) }
 	if len(packages) == 0 { // this is not a package but a module
-		if err = os.Remove(getAbsolutePath("", fmt.Sprintf("%s.py", formatName(p.Name)))); err != nil {
+		if err = os.Remove(getAbsolutePath(fmt.Sprintf("%s.py", formatName(p.Name)))); err != nil {
 			return err
 		}
 	} else {
@@ -163,7 +163,7 @@ func (p *Package) GetSize() (int64, error) {
 	if err != nil {
 		return 0, err
 	} else if len(packages) == 0 { // this is not a package but a module
-		f, err := os.Stat(getAbsolutePath("", formatName(p.Name)+".py"))
+		f, err := os.Stat(getAbsolutePath(formatName(p.Name) + ".py"))
 		if err != nil {
 			return 0, err
 		} else {
@@ -173,7 +173,7 @@ func (p *Package) GetSize() (int64, error) {
 
 	var size int64
 	for _, pkgName := range packages {
-		err = filepath.Walk(getAbsolutePath(pkgName, ""), func(_ string, info os.FileInfo, _ error) error {
+		err = filepath.Walk(getAbsolutePath(pkgName), func(_ string, info os.FileInfo, _ error) error {
 			if info != nil && !info.IsDir() {
 				size += info.Size()
 			}
@@ -217,8 +217,8 @@ func clearVersion(version string) string {
 }
 
 // getAbsolutePath returns absolute path to the file in directory with packages
-func getAbsolutePath(dirName, fileName string) string {
-	return fmt.Sprintf("%s/%s/%s", config.PythonLibPath, dirName, fileName)
+func getAbsolutePath(elem ...string) string {
+	return filepath.Clean(config.PythonLibPath) + string(os.PathSeparator) + filepath.Join(elem...)
 }
 
 // Parse directory by format "%pkgName%-%version%.%format%" and returns it
