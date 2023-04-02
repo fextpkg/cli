@@ -144,7 +144,7 @@ func (p *Package) Uninstall() error {
 		}
 	}
 
-	if removeDir(p.metaDir) != nil {
+	if err = removeDir(p.metaDir); err != nil {
 		return err
 	}
 

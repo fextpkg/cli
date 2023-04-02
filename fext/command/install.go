@@ -93,7 +93,9 @@ func install(pkgName string, silent bool) error {
 		if version == p.Version {
 			return packageAlreadyInstalled
 		} else {
-			p.Uninstall()
+			if err = p.Uninstall(); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -102,10 +104,10 @@ func install(pkgName string, silent bool) error {
 		return err
 	}
 
-	if io.ExtractPackage(filePath) != nil {
+	if err = io.ExtractPackage(filePath); err != nil {
 		return err
 	}
-	if os.RemoveAll(filePath) != nil { // remove tmp file, that was downloaded
+	if err = os.RemoveAll(filePath); err != nil { // remove tmp file, that was downloaded
 		return err
 	}
 	if !silent {

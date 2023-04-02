@@ -19,5 +19,6 @@ func ReadLines(fileName string) ([]string, error) {
 			result = append(result, line)
 		}
 	}
-	return result, nil
+
+	return result, f.Close()
 }
