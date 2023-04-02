@@ -206,8 +206,7 @@ func formatName(dirName string) string {
 // parseFormat parse the directory name and returns its format.
 // Example: "requests-2.26.0.dist-info" => "dist-info"
 func parseFormat(dirName string) string {
-	s := strings.Split(dirName, ".")
-	return s[len(s)-1]
+	return filepath.Ext(dirName)[1:]
 }
 
 // clearVersion removes extra characters from the version.
