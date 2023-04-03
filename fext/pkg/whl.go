@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -102,50 +101,50 @@ func (p *Package) parseMetaData() error {
 	return nil
 }
 
-// getTopLevel returns the packages names from the file "top_level.txt". This
-// file stores a list of packages that python can work with
+// getTopLevel scans the "top_level.txt" file, which contains the names of
+// packages and modules. If it does not exist, then adds the package name and
+// returns it.
 func (p *Package) getTopLevel() ([]string, error) {
-	return io.ReadLines(getAbsolutePath(p.metaDir, "top_level.txt"))
-}
-
-// getSourceDirs returns a list of directories with source code
-func (p *Package) getSourceDirs() ([]string, error) {
-	packages, err := p.getTopLevel()
+	files, err := io.ReadLines(getAbsolutePath(p.metaDir, "top_level.txt"))
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			return nil, err
 		}
-		// additionally, we check the presence of the source code folder, since some
-		// generators do not add the top_level.txt file
-		if _, err = os.Stat(getAbsolutePath(p.Name)); err == nil {
-			packages = []string{p.Name}
-		}
+		// add the package name manually, since some generators do not create a
+		// "top_level.txt" file
+		files = []string{p.Name}
 	}
-	return packages, nil
+	return files, nil
 }
 
-// Uninstall deletes all folders and files associated with this package
+// getSourceFiles returns name of source file belonging to this package by
+// converting names of modules and packages
+func (p *Package) getSourceFiles() ([]string, error) {
+	files, err := p.getTopLevel()
+	if err != nil {
+		return nil, err
+	}
+	for i, fileName := range files {
+		_, err = os.Stat(getAbsolutePath(fileName))
+		if errors.Is(err, os.ErrNotExist) { // file
+			files[i] = fileName + ".py"
+		}
+	}
+	return files, nil
+}
+
+// Uninstall deletes all directories and files belonging to this package
 func (p *Package) Uninstall() error {
-	packages, err := p.getSourceDirs()
+	files, err := p.getSourceFiles()
 	if err != nil {
 		return err
 	}
 
-	removeDir := func(dirName string) error { return os.RemoveAll(getAbsolutePath(dirName)) }
-	if len(packages) == 0 { // this is not a package but a module
-		if err = os.Remove(getAbsolutePath(fmt.Sprintf("%s.py", formatName(p.Name)))); err != nil {
+	files = append(files, p.metaDir)
+	for _, fileName := range files {
+		if err = os.RemoveAll(getAbsolutePath(fileName)); err != nil {
 			return err
 		}
-	} else {
-		for _, pkgName := range packages {
-			if err = removeDir(pkgName); err != nil {
-				return err
-			}
-		}
-	}
-
-	if err = removeDir(p.metaDir); err != nil {
-		return err
 	}
 
 	return nil
@@ -153,21 +152,15 @@ func (p *Package) Uninstall() error {
 
 // GetSize calculate all size of files in directory with source code. Returns size in bytes
 func (p *Package) GetSize() (int64, error) {
-	packages, err := p.getSourceDirs()
+	files, err := p.getSourceFiles()
 	if err != nil {
 		return 0, err
-	} else if len(packages) == 0 { // this is not a package but a module
-		f, err := os.Stat(getAbsolutePath(formatName(p.Name) + ".py"))
-		if err != nil {
-			return 0, err
-		} else {
-			return f.Size(), nil
-		}
 	}
 
+	files = append(files, p.metaDir)
 	var size int64
-	for _, pkgName := range packages {
-		err = filepath.Walk(getAbsolutePath(pkgName), func(_ string, info os.FileInfo, _ error) error {
+	for _, fileName := range files {
+		err = filepath.Walk(getAbsolutePath(fileName), func(_ string, info os.FileInfo, _ error) error {
 			if info != nil && !info.IsDir() {
 				size += info.Size()
 			}
