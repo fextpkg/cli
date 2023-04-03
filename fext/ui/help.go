@@ -22,7 +22,8 @@ func PrintHelp() {
 func PrintHelpInstall() {
 	fmt.Println("Available options:\n",
 		"\t-n, --no-dependencies - Install single package, without dependencies\n",
-		"\t-s, --silent - Output only error messages",
+		"\t-s, --silent - Output only error messages\n",
+		"\t-r, --requirements - Install from files",
 	)
 }
 
