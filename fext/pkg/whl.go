@@ -125,8 +125,13 @@ func (p *Package) getSourceFiles() ([]string, error) {
 		return nil, err
 	}
 	for i, fileName := range files {
-		_, err = os.Stat(getAbsolutePath(fileName))
-		if errors.Is(err, os.ErrNotExist) { // file
+		// since the names of the files are contained without an extension, first we
+		// check for a directory with this name, if it is not there, then it is a python
+		// file
+		if _, err = os.Stat(getAbsolutePath(fileName)); err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
+				return nil, err
+			}
 			files[i] = fileName + ".py"
 		}
 	}
