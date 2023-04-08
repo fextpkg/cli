@@ -12,8 +12,7 @@ import (
 )
 
 var (
-	MissingPackage    = errors.New("package not found")
-	UnsupportedFormat = errors.New("unsupported format")
+	ErrMissingPackage = errors.New("package not found")
 )
 
 type Package struct {
@@ -247,5 +246,5 @@ func getPackageMetaDir(pkgName string) (string, error) {
 		}
 	}
 
-	return "", MissingPackage
+	return "", ErrMissingPackage
 }
