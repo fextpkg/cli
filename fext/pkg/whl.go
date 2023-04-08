@@ -138,6 +138,11 @@ func (p *Package) getSourceFiles() ([]string, error) {
 	return files, nil
 }
 
+// getDataDirectory returns the name of the directory with the data files
+func (p *Package) getDataDirectory() string {
+	return p.metaDir[:len(p.metaDir)-9] + "data"
+}
+
 // Uninstall deletes all directories and files belonging to this package
 func (p *Package) Uninstall() error {
 	files, err := p.getSourceFiles()
@@ -145,7 +150,7 @@ func (p *Package) Uninstall() error {
 		return err
 	}
 
-	files = append(files, p.metaDir)
+	files = append(files, p.metaDir, p.getDataDirectory())
 	for _, fileName := range files {
 		if err = os.RemoveAll(getAbsolutePath(fileName)); err != nil {
 			return err
@@ -162,7 +167,7 @@ func (p *Package) GetSize() (int64, error) {
 		return 0, err
 	}
 
-	files = append(files, p.metaDir)
+	files = append(files, p.metaDir, p.getDataDirectory())
 	var size int64
 	for _, fileName := range files {
 		err = filepath.Walk(getAbsolutePath(fileName), func(_ string, info os.FileInfo, _ error) error {
