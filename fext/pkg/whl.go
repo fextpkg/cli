@@ -159,7 +159,8 @@ func (p *Package) Uninstall() error {
 	return nil
 }
 
-// GetSize calculate all size of files in directory with source code. Returns size in bytes
+// GetSize calculate all size of files in directories belonging to this package.
+// Returns size in bytes
 func (p *Package) GetSize() (int64, error) {
 	files, err := p.getSourceFiles()
 	if err != nil {
