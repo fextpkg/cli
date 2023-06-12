@@ -10,18 +10,11 @@ import (
 )
 
 const (
-	SysPlatform = "linux"
+	SysPlatform = "linux" // PEP 508 marker
+	pythonExec  = "python3"
 )
 
 var GLibCVersion = C.GoString(C.gnu_get_libc_version())
-
-func getPythonExec() string {
-	return "python3"
-}
-
-func getPythonVenvExec() string {
-	return virtualEnvPath + "/bin/python"
-}
 
 func getPythonLib() string {
 	homePath, err := os.UserHomeDir()

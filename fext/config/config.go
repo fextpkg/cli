@@ -15,7 +15,6 @@ const (
 var (
 	virtualEnvPath = getVirtualEnvPath()
 
-	pythonExec    string // Path to python executor
 	PythonVersion string
 	PythonLibPath string // Path to python packages directory
 
@@ -71,11 +70,9 @@ func parseArguments(args []string) ([]string, []string) {
 func init() {
 	// Fill in the variables based on whether the virtual environment is enabled
 	if virtualEnvPath != "" {
-		pythonExec = getPythonVenvExec()
 		PythonVersion = getPythonVersion()
 		PythonLibPath = getPythonVenvLib()
 	} else {
-		pythonExec = getPythonExec()
 		PythonVersion = getPythonVersion()
 		PythonLibPath = getPythonLib()
 	}

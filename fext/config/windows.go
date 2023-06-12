@@ -9,15 +9,8 @@ import (
 
 const (
 	SysPlatform = "win32" // PEP 508 marker
+	pythonExec  = "python"
 )
-
-func getPythonExec() string {
-	return "python"
-}
-
-func getPythonVenvExec() string {
-	return virtualEnvPath + "\\Scripts\\python"
-}
 
 func getPythonLib() string {
 	pathToAppData, err := os.UserConfigDir()
