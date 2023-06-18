@@ -80,8 +80,8 @@ func getExtraPackages(pkgName string, extraNames []string) ([]string, error) {
 }
 
 func install(pkgName string, silent bool) error {
-	pkgName, op := expression.ParseExpression(pkgName)
-	web := web.NewRequest(pkgName, op)
+	pkgName, conditions := expression.ParseConditions(pkgName)
+	web := web.NewRequest(pkgName, conditions)
 
 	version, link, err := web.GetPackageData()
 	if err != nil {

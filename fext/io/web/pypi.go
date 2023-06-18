@@ -14,19 +14,23 @@ import (
 )
 
 type PyPi struct {
-	pkgName string
-	op      [][]string
+	pkgName    string
+	conditions []expression.Condition
 }
 
+// GetPackageData gets a first package version that fits the conditions of the
+// operators. Returns package version, download link. An error will be returned
+// if a suitable version was not found or another error occurred
 func (web *PyPi) GetPackageData() (string, string, error) {
 	doc, err := web.getPackageList()
 	if err != nil {
 		return "", "", err
 	}
 
-	return web.selectAppropriateVersion(doc)
+	return web.selectSuitableVersion(doc)
 }
 
+// getPackageList gets a list of package versions
 func (web *PyPi) getPackageList() (*html.Node, error) {
 	resp, err := http.Get("https://pypi.org/simple/" + web.pkgName + "/")
 	if err != nil {
@@ -46,8 +50,8 @@ func (web *PyPi) getPackageList() (*html.Node, error) {
 	return doc, nil
 }
 
-// Parse document and select optimal version. Returns version and link to download
-func (web *PyPi) selectAppropriateVersion(doc *html.Node) (string, string, error) {
+// Parse document and select correct version. Returns version, download link
+func (web *PyPi) selectSuitableVersion(doc *html.Node) (string, string, error) {
 	// html => body (on pypi)
 	startNode := doc.FirstChild.NextSibling.FirstChild.NextSibling.NextSibling.LastChild
 	var fullData string
@@ -64,13 +68,16 @@ func (web *PyPi) selectAppropriateVersion(doc *html.Node) (string, string, error
 			continue
 		}
 
-		pkgData := strings.Split(fullData, "-") // [name, version, [,build-tag] py-tag, abi-tag, platform-tag]
-		ok, err := checkPlatformCompatibility(pkgData)
+		pkgTags := strings.Split(fullData, "-") // [name, version, [,build-tag] py-tag, abi-tag, platform-tag]
+		ok, err := checkPlatformCompatibility(pkgTags)
 		if !ok {
+			if err != nil {
+				return "", "", err
+			}
 			continue
 		}
 
-		ok, err = compareVersion(pkgData[1], web.op)
+		ok, err = compareVersion(pkgTags[1], web.conditions)
 		if !ok {
 			if err != nil {
 				return "", "", err
@@ -79,7 +86,7 @@ func (web *PyPi) selectAppropriateVersion(doc *html.Node) (string, string, error
 		}
 
 		link, versionClassifiers := parseAttrs(node.Attr)
-		_, classifiers := expression.ParseExpression(versionClassifiers)
+		_, classifiers := expression.ParseConditions(versionClassifiers)
 		ok, err = compareVersion(config.PythonVersion, classifiers)
 		if !ok {
 			if err != nil {
@@ -88,12 +95,14 @@ func (web *PyPi) selectAppropriateVersion(doc *html.Node) (string, string, error
 			continue
 		}
 
-		return pkgData[1], link, nil
+		return pkgTags[1], link, nil
 	}
 
 	return "", "", errors.New("no matching version was found")
 }
 
+// DownloadPackage downloads the package from PyPi repository. Returns path
+// to downloaded package
 func (web *PyPi) DownloadPackage(link string) (string, error) {
 	hashSum := strings.Split(link, "sha256=")[1]
 
@@ -117,13 +126,17 @@ func (web *PyPi) DownloadPackage(link string) (string, error) {
 	return tmpFile.Name(), nil
 }
 
-func NewRequest(pkgName string, op [][]string) *PyPi {
+// NewRequest creates a new package search query object on PyPi with the
+// specified conditions
+func NewRequest(pkgName string, cond []expression.Condition) *PyPi {
 	return &PyPi{
-		pkgName: pkgName,
-		op:      op,
+		pkgName:    pkgName,
+		conditions: cond,
 	}
 }
 
+// parseAttrs parses the HTML element attributes and returns download link,
+// version classifiers
 func parseAttrs(attrs []html.Attribute) (string, string) {
 	var link, versionClassifiers string
 	for _, attr := range attrs {
@@ -132,16 +145,16 @@ func parseAttrs(attrs []html.Attribute) (string, string) {
 			link = attr.Val
 		case "data-requires-python":
 			// remove this parts, because it's works fine without it
-			attr.Val = strings.ReplaceAll(attr.Val, ".*", "")
-			versionClassifiers = attr.Val
+			versionClassifiers = strings.ReplaceAll(attr.Val, ".*", "")
 		}
 	}
 	return link, versionClassifiers
 }
 
-func compareVersion(version string, operators [][]string) (bool, error) {
-	for _, op := range operators {
-		ok, err := expression.CompareVersion(version, op[0], op[1])
+// compareVersion checks the compliance of the version for the passed operators
+func compareVersion(version string, conditions []expression.Condition) (bool, error) {
+	for _, cond := range conditions {
+		ok, err := expression.CompareVersion(version, cond.Op, cond.Value)
 		if !ok {
 			if err != nil {
 				return false, err
@@ -152,12 +165,14 @@ func compareVersion(version string, operators [][]string) (bool, error) {
 	return true, nil
 }
 
-func checkPlatformCompatibility(pkgData []string) (bool, error) {
+// checkPlatformCompatibility accepts compatibility tags of a package (PEP 425) and checks
+// the platform tag for compatibility with the current platform
+func checkPlatformCompatibility(tags []string) (bool, error) {
 	var platformTag string
-	if len(pkgData) == 6 { // have additional build tag
-		platformTag = pkgData[5]
+	if len(tags) == 6 { // have additional build tag
+		platformTag = tags[5]
 	} else {
-		platformTag = pkgData[4]
+		platformTag = tags[4]
 	}
 	platformTag = platformTag[:len(platformTag)-4] // remove ".whl"
 	if platformTag == "any" {

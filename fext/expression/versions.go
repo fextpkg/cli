@@ -7,6 +7,11 @@ import (
 	"unicode"
 )
 
+type Condition struct {
+	Value string
+	Op    string
+}
+
 // parseVersion splits the version into semantic parts (major, minor, patch, pre)
 // and returns them in the form [3]int{major, minor, patch}, pre. Returns an error
 // if version could not be converted to int
@@ -121,20 +126,22 @@ func CompareVersion(v1, op, v2 string) (bool, error) {
 	return false, nil
 }
 
-// ParseExpression split package name, operators and versions. Returns pkgName,
-// [][]string{operator, version}
-func ParseExpression(exp string) (string, [][]string) {
-	var operators [][]string
-	// parse operators and split them. E.g. "name<=4.0.0 >=4.0.0" => [[<=, 4.0.0], [>=, 4.0.0]]
-	// NOTE: separator can be anything, and it also may not exist
+// ParseConditions split package name and conditions. Separator can be anything,
+// and it also may not exist. Returns package name, conditions. Example:
+// "name<=4.0.0 >=4.0.0" => name, [(<=, 4.0.0), (>=, 4.0.0)]
+func ParseConditions(exp string) (string, []Condition) {
+	var cond []Condition
 	re, _ := regexp.Compile(`([<>!=]=?)([\w\.]+)`)
 	v := re.FindAllStringSubmatch(strings.ReplaceAll(exp, " ", ""), -1)
 
 	for _, value := range v {
-		operators = append(operators, value[1:]) // [baseValue, operator, version]
+		cond = append(cond, Condition{
+			Value: value[2],
+			Op:    value[1],
+		}) // value[baseValue, operator, value]
 	}
 
 	// split name
 	re, _ = regexp.Compile(`[\w|\-.]+`)
-	return re.FindString(exp), operators
+	return re.FindString(exp), cond
 }
