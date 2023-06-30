@@ -51,30 +51,30 @@ func minusString(text string) string {
 	return b.String()
 }
 
-func PrintfOK(text string, args ...interface{}) (int, error) {
-	return fmt.Print(colorString(Green+Bold, fmt.Sprintf(text, args...)))
+func PrintfOK(text string, args ...interface{}) {
+	fmt.Print(colorString(Green+Bold, fmt.Sprintf(text, args...)))
 }
 
-func PrintfWarning(text string, args ...interface{}) (int, error) {
-	return fmt.Print(colorString(Orange+Bold, fmt.Sprintf(text, args...)))
+func PrintfWarning(text string, args ...interface{}) {
+	fmt.Print(colorString(Orange+Bold, fmt.Sprintf(text, args...)))
 }
 
-func PrintlnError(a ...string) (int, error) {
-	return fmt.Println(colorString(Red+Bold, strings.Join(a, " ")))
+func PrintlnError(a ...string) {
+	fmt.Println(colorString(Red+Bold, strings.Join(a, " ")))
 }
 
-func PrintfError(text string, args ...interface{}) (int, error) {
-	return fmt.Print(colorString(Red+Bold, fmt.Sprintf(text, args...)))
+func PrintfError(text string, args ...interface{}) {
+	fmt.Print(colorString(Red+Bold, fmt.Sprintf(text, args...)))
 }
 
-func PrintlnPlus(text string) (int, error) {
-	return fmt.Println(plusString(text))
+func PrintlnPlus(text string) {
+	fmt.Println(plusString(text))
 }
 
-func PrintfPlus(text string, args ...interface{}) (int, error) {
-	return fmt.Print(plusString(fmt.Sprintf(text, args...)))
+func PrintfPlus(text string, args ...interface{}) {
+	fmt.Print(plusString(fmt.Sprintf(text, args...)))
 }
 
-func PrintfMinus(text string, args ...interface{}) (int, error) {
-	return fmt.Print(minusString(fmt.Sprintf(text, args...)))
+func PrintfMinus(text string, args ...interface{}) {
+	fmt.Print(minusString(fmt.Sprintf(text, args...)))
 }
