@@ -8,11 +8,8 @@ import (
 
 	"github.com/fextpkg/cli/fext/config"
 	"github.com/fextpkg/cli/fext/expression"
+	"github.com/fextpkg/cli/fext/ferror"
 	"github.com/fextpkg/cli/fext/io"
-)
-
-var (
-	ErrMissingPackage = errors.New("package not found")
 )
 
 type Package struct {
@@ -247,5 +244,5 @@ func getPackageMetaDir(pkgName string) (string, error) {
 		}
 	}
 
-	return "", ErrMissingPackage
+	return "", ferror.MissingDirectory
 }

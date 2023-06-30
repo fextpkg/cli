@@ -8,6 +8,7 @@ import (
 
 	"github.com/fextpkg/cli/fext/config"
 	"github.com/fextpkg/cli/fext/expression"
+	"github.com/fextpkg/cli/fext/ferror"
 	"github.com/fextpkg/cli/fext/io"
 	"github.com/fextpkg/cli/fext/io/web"
 	"github.com/fextpkg/cli/fext/pkg"
@@ -17,8 +18,6 @@ import (
 var (
 	optNoDependencies bool // without dependencies
 	optSilent         bool // output only error messages
-
-	packageAlreadyInstalled = errors.New("package already installed")
 )
 
 // Parse extra names. Returns pkgName, extraNames and error if syntax is invalid
@@ -38,7 +37,7 @@ func parseExtraNames(s string) (string, []string, error) {
 		originalName := s[:startQuote]
 		s = s[startQuote+1 : endQuote]
 		if strings.ContainsAny(s, "[]") {
-			return originalName, nil, errors.New("syntax error")
+			return originalName, nil, ferror.SyntaxError
 		}
 
 		var extraNames []string
@@ -49,7 +48,7 @@ func parseExtraNames(s string) (string, []string, error) {
 
 		return originalName, extraNames, nil
 	} else if startQuote|endQuote != 0 {
-		return s, nil, errors.New("syntax error")
+		return s, nil, ferror.SyntaxError
 	}
 
 	return s, nil, nil
@@ -81,9 +80,9 @@ func getExtraPackages(pkgName string, extraNames []string) ([]string, error) {
 
 func install(pkgName string, silent bool) error {
 	pkgName, conditions := expression.ParseConditions(pkgName)
-	web := web.NewRequest(pkgName, conditions)
+	req := web.NewRequest(pkgName, conditions)
 
-	version, link, err := web.GetPackageData()
+	version, link, err := req.GetPackageData()
 	if err != nil {
 		return err
 	}
@@ -91,7 +90,7 @@ func install(pkgName string, silent bool) error {
 	p, err := pkg.Load(pkgName)
 	if err == nil {
 		if version == p.Version {
-			return packageAlreadyInstalled
+			return ferror.PackageAlreadyInstalled
 		} else {
 			if err = p.Uninstall(); err != nil {
 				return err
@@ -99,7 +98,7 @@ func install(pkgName string, silent bool) error {
 		}
 	}
 
-	filePath, err := web.DownloadPackage(link)
+	filePath, err := req.DownloadPackage(link)
 	if err != nil {
 		return err
 	}
@@ -122,7 +121,7 @@ func install(pkgName string, silent bool) error {
 	if !optNoDependencies {
 		for _, dep := range p.Dependencies {
 			err = install(fmt.Sprint(dep.Name, dep.Conditions), true)
-			if err != nil && err != packageAlreadyInstalled {
+			if err != nil && err != ferror.PackageAlreadyInstalled {
 				ui.PrintfMinus("%s (%s) (%v)\n", dep.Name, pkgName, err)
 			}
 		}

@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fextpkg/cli/fext/ferror"
 	"golang.org/x/net/html"
 
 	"github.com/fextpkg/cli/fext/config"
@@ -98,7 +99,7 @@ func (web *PyPi) selectSuitableVersion(doc *html.Node) (string, string, error) {
 		return pkgTags[1], link, nil
 	}
 
-	return "", "", errors.New("no matching version was found")
+	return "", "", ferror.NoSuitableVersion
 }
 
 // DownloadPackage downloads the package from PyPi repository. Returns path
