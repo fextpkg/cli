@@ -88,7 +88,7 @@ func (i *Installer) install(query *Query) ([]pkg.Extra, error) {
 	if err = io.ExtractPackage(filePath); err != nil {
 		return nil, err
 	}
-	// remove installed file
+	// remove downloaded file
 	if err = os.RemoveAll(filePath); err != nil {
 		return nil, err
 	}
