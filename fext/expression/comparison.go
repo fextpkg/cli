@@ -5,7 +5,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"unicode"
 
 	"github.com/fextpkg/cli/fext/config"
 )
@@ -72,31 +71,6 @@ func getStrCompareFunc(operator string) (func(a string, b string) bool, error) {
 	}
 }
 
-func convertLettersToIntString(letters string) string {
-	var out string
-
-	for _, v := range letters {
-		if !unicode.IsDigit(v) {
-			// 97 is index of start letters in lowercase. We don't use original
-			// indexes cause compare function works faster
-			out += strconv.Itoa(int(v - 96))
-		} else {
-			out += string(v)
-		}
-	}
-
-	return out
-}
-
-func compare(a, b int, operator string) (bool, error) {
-	compareFunc, err := getCompareFunc(operator)
-	if err != nil {
-		return false, err
-	}
-
-	return compareFunc(a, b), nil
-}
-
 // Returns indexes of the deepest and closet pair of brackets
 func getBracketIndexes(s string) (int, int) {
 	var start int
@@ -123,7 +97,7 @@ func compareBool(a, b bool, operator string) (bool, error) {
 // Split comparison and logical operators
 func splitExpOperators(exp string) ([]string, []string) {
 	var comparison, logical []string
-	re, _ := regexp.Compile(`(\S+ [><=!]=? \S+|true|false)`)
+	re := regexp.MustCompile(`(\S+ [><=!]=? \S+|true|false)`)
 	comparison = re.FindAllString(exp, -1)
 	for _, v := range strings.Split(exp, " ") {
 		if v == "and" || v == "or" {
@@ -136,6 +110,9 @@ func splitExpOperators(exp string) ([]string, []string) {
 
 func compareSubExpression(s string) (bool, error) {
 	defer func() { recover() }() // TODO signal about error
+	if s == "" {
+		return true, nil
+	}
 	var cResults []bool
 	c, l := splitExpOperators(s)
 	for _, v := range c {
@@ -154,7 +131,7 @@ func compareSubExpression(s string) (bool, error) {
 
 		// set markers value (PEP 508)
 		switch comp[0] {
-		case "python_version":
+		case "python_version", "python_full_version":
 			value, err := CompareVersion(config.PythonVersion, comp[1], comp[2])
 			if err != nil {
 				return false, err
@@ -203,6 +180,4 @@ func CompareExpression(exp string) (bool, error) {
 			return compareSubExpression(exp)
 		}
 	}
-
-	return false, nil
 }

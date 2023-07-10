@@ -17,8 +17,8 @@ type Package struct {
 	Name    string
 	Version string
 
-	Dependencies []extra
-	Extra        map[string][]extra
+	Dependencies []Extra
+	Extra        map[string][]Extra
 }
 
 func Load(pkgName string) (*Package, error) {
@@ -30,8 +30,8 @@ func Load(pkgName string) (*Package, error) {
 	p := Package{
 		Name:         pkgName,
 		metaDir:      dirName,
-		Dependencies: []extra{},
-		Extra:        map[string][]extra{},
+		Dependencies: []Extra{},
+		Extra:        map[string][]Extra{},
 	}
 	if err = p.parseMetaData(); err != nil {
 		return nil, err
@@ -43,8 +43,8 @@ func Load(pkgName string) (*Package, error) {
 func LoadFromMetaDir(metaDir string) (*Package, error) {
 	p := Package{
 		metaDir:      metaDir,
-		Dependencies: []extra{},
-		Extra:        map[string][]extra{},
+		Dependencies: []Extra{},
+		Extra:        map[string][]Extra{},
 	}
 	if err := p.parseMetaData(); err != nil {
 		return nil, err
@@ -64,23 +64,25 @@ func (p *Package) parseMetaData() error {
 		if s != "" && (s[0] == 'R' || s[0] == 'P' || s[0] == 'V' || s[0] == 'N') {
 			field := strings.SplitN(s, ": ", 2)
 			if field[0] == "Requires-Dist" {
-				e := extra{}
+				e := Extra{Compatible: true}
 				value := strings.Split(field[1], ";") // [name_and_conditions, markers]
 				if len(value) == 2 {
-					e.markers = value[1]
+					e.Compatible, err = expression.CompareExpression(value[1])
+					if err != nil {
+						return err
+					}
 				}
 				value = strings.Split(value[0], " ") // [name, conditions]
 				if len(value) > 1 {
-					e.Conditions = value[1]
+					_, e.Conditions = expression.ParseConditions(value[1])
 				}
 				e.Name = value[0]
 
 				if extraName != "" {
 					if _e, found := p.Extra[extraName]; found {
-						_e = append(_e, e)
-						p.Extra[extraName] = _e
+						p.Extra[extraName] = append(_e, e)
 					} else {
-						p.Extra[extraName] = []extra{e}
+						p.Extra[extraName] = []Extra{e}
 					}
 				} else {
 					p.Dependencies = append(p.Dependencies, e)
@@ -178,18 +180,11 @@ func (p *Package) GetSize() (int64, error) {
 	return size, nil
 }
 
-// extra is used simultaneously for dependencies and extra packages
-type extra struct {
+// Extra is used simultaneously for dependencies and extra packages
+type Extra struct {
 	Name       string
-	Conditions string
-	markers    string
-}
-
-// CheckMarkers checks the possibility of installation according to the
-// specified markers. Returns an error if parsing failed
-func (e *extra) CheckMarkers() (bool, error) {
-	// TODO move marker replaces from markers module to this func
-	return expression.CompareExpression(e.markers)
+	Conditions []expression.Condition
+	Compatible bool
 }
 
 // formatName formats the directory name to a single view
@@ -203,7 +198,7 @@ func parseFormat(dirName string) string {
 	return filepath.Ext(dirName)[1:]
 }
 
-// clearVersion removes extra characters from the version.
+// clearVersion removes Extra characters from the version.
 // Example: "2.26.0.dist" => "2.26.0"
 func clearVersion(version string) string {
 	return strings.Replace(version, ".dist", "", 1)
@@ -244,5 +239,5 @@ func getPackageMetaDir(pkgName string) (string, error) {
 		}
 	}
 
-	return "", ferror.MissingDirectory
+	return "", ferror.PackageDirectoryMissing
 }

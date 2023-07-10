@@ -131,7 +131,7 @@ func CompareVersion(v1, op, v2 string) (bool, error) {
 // "name<=4.0.0 >=4.0.0" => name, [(<=, 4.0.0), (>=, 4.0.0)]
 func ParseConditions(exp string) (string, []Condition) {
 	var cond []Condition
-	re, _ := regexp.Compile(`([<>!=]=?)([\w\.]+)`)
+	re := regexp.MustCompile(`([<>!=]=?)([\w\.]+)`)
 	v := re.FindAllStringSubmatch(strings.ReplaceAll(exp, " ", ""), -1)
 
 	for _, value := range v {
@@ -142,6 +142,6 @@ func ParseConditions(exp string) (string, []Condition) {
 	}
 
 	// split name
-	re, _ = regexp.Compile(`[\w|\-.]+`)
+	re, _ = regexp.Compile(`[\w|\-.\[\]]+`)
 	return re.FindString(exp), cond
 }

@@ -4,7 +4,7 @@ import "errors"
 
 var (
 	SyntaxError             = errors.New("syntax error")
-	MissingDirectory        = errors.New("package metadata directory not found")
+	PackageDirectoryMissing = errors.New("package metadata directory not found")
 	PackageAlreadyInstalled = errors.New("package already installed")
 	NoSuitableVersion       = errors.New("no suitable version")
 )

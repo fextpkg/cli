@@ -77,6 +77,7 @@ func (web *PyPi) selectSuitableVersion(doc *html.Node) (string, string, error) {
 			}
 			continue
 		}
+		// TODO: check py-tag
 
 		ok, err = compareVersion(pkgTags[1], web.conditions)
 		if !ok {
