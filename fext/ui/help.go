@@ -21,9 +21,9 @@ func PrintHelp() {
 // PrintHelpInstall prints install help info
 func PrintHelpInstall() {
 	fmt.Println("Available options:\n",
-		"\t-n, --no-dependencies - Install single package, without dependencies\n",
-		"\t-s, --silent - Output only error messages\n",
-		"\t-r, --requirements - Install from files",
+		"\t-n, --no-dependencies      - Install single package, without dependencies\n",
+		"\t-q, --quiet (-s, --silent) - Print only error messages\n",
+		"\t-r, --requirements         - Install from files",
 	)
 }
 
