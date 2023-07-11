@@ -29,6 +29,7 @@ func Install(packages []string) {
 			return
 		case "n", "no-dependencies":
 			opt.NoDependencies = true
+		case "s", "silent", "q", "quiet":
 			opt.Silent = true
 		case "r", "requirements":
 			var err error
