@@ -7,11 +7,6 @@ import (
 	"github.com/fextpkg/cli/fext/ui"
 )
 
-var (
-	optNoDependencies bool // without dependencies
-	optSilent         bool // output only error messages
-)
-
 func getPackagesFromFiles(files []string) ([]string, error) {
 	var packages []string
 	for _, fileName := range files {
@@ -25,15 +20,16 @@ func getPackagesFromFiles(files []string) ([]string, error) {
 }
 
 func Install(packages []string) {
+	opt := installer.DefaultOptions()
+
 	for _, f := range config.Flags {
 		switch f {
 		case "h", "help":
 			ui.PrintHelpInstall()
 			return
 		case "n", "no-dependencies":
-			optNoDependencies = true
-		case "s", "silent":
-			optSilent = true
+			opt.NoDependencies = true
+			opt.Silent = true
 		case "r", "requirements":
 			var err error
 			packages, err = getPackagesFromFiles(packages)
@@ -46,7 +42,7 @@ func Install(packages []string) {
 		}
 	}
 
-	i := installer.NewInstaller()
+	i := installer.NewInstaller(opt)
 	err := i.InitializePackages(packages)
 	if err != nil {
 		ui.PrintlnError(err.Error())

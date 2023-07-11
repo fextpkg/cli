@@ -11,14 +11,29 @@ import (
 	"github.com/fextpkg/cli/fext/ui"
 )
 
+type Options struct {
+	NoDependencies bool // without dependencies
+	Silent         bool // prints only error messages
+}
+
+// DefaultOptions returns an Options struct with default parameters
+func DefaultOptions() *Options {
+	return &Options{
+		NoDependencies: false,
+		Silent:         false,
+	}
+}
+
 type Installer struct {
 	local []*Query    // Installed packages
 	queue chan *Query // Prepared package queries
+
+	opt *Options
 }
 
-// supplyPackages separates extra dependencies from packages and adds all
-// prepared packages to the queue
-func (i *Installer) supplyPackages(queries []*Query) error {
+// supply separates extra dependencies from packages and adds all
+// dependent packages to the queue
+func (i *Installer) supply(queries []*Query) error {
 	var q *Query
 	for len(queries) > 0 {
 		q = queries[0]
@@ -103,7 +118,7 @@ func (i *Installer) install(query *Query) ([]pkg.Extra, error) {
 }
 
 // process pops the package from queue and installs it. Parses dependencies
-// and append them to queue
+// of the installed package and append them to queue. Prints the final result
 func (i *Installer) process() {
 	for len(i.queue) > 0 {
 		q, open := <-i.queue
@@ -116,11 +131,16 @@ func (i *Installer) process() {
 			ui.PrintfMinus("%s (%v)\n", q.pkgName, err)
 			continue
 		}
-		ui.PrintlnPlus(q.pkgName)
 
-		err = i.supplyPackages(extrasToQuery(dependencies))
-		if err != nil {
-			ui.PrintfError("%s deps (%s)\n", q.pkgName, err)
+		if !i.opt.Silent {
+			ui.PrintlnPlus(q.pkgName)
+		}
+
+		if !i.opt.NoDependencies {
+			err = i.supply(extrasToQuery(dependencies))
+			if err != nil {
+				ui.PrintfError("%s deps (%s)\n", q.pkgName, err)
+			}
 		}
 	}
 }
@@ -133,7 +153,7 @@ func (i *Installer) InitializePackages(packages []string) error {
 		q = append(q, newRawQuery(pkgName))
 	}
 
-	return i.supplyPackages(q)
+	return i.supply(q)
 }
 
 // Install starts the package installing loop
@@ -142,9 +162,10 @@ func (i *Installer) Install() {
 	close(i.queue)
 }
 
-func NewInstaller() *Installer {
+func NewInstaller(opt *Options) *Installer {
 	return &Installer{
 		queue: make(chan *Query, 512),
+		opt:   opt,
 	}
 }
 
