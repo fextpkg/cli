@@ -11,10 +11,10 @@ import (
 func PrintHelp() {
 	fmt.Println("Usage:\n\tfext <command> [args]",
 		"\n\nAvailable commands:\n",
-		"\t(i)nstall [options] <package(s)> - install a package(s)\n",
+		"\t(i)nstall [options] <package(s)>   - install a package(s)\n",
 		"\t(u)ninstall [options] <package(s)> - uninstall a package(s)\n",
 		"\tfreeze - show list of installed packages\n",
-		"\tdebug - show debug info",
+		"\tdebug  - show debug info",
 		"\n\nFor additional help you can write:\n\tfext <command> -h")
 }
 
