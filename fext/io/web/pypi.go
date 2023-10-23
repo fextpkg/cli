@@ -228,7 +228,7 @@ func compareVersion(version string, conditions []expression.Condition) (bool, er
 func checkPythonCompatibility(pythonTag string) bool {
 	// https://packaging.python.org/en/latest/specifications/platform-compatibility-tags/#python-tag
 
-	// There can be several platforms and they alternate through a point
+	// There can be several versions and they alternate through a point
 	for _, version := range strings.Split(pythonTag, ".") {
 		code := version[:2]
 

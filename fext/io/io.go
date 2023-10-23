@@ -32,7 +32,6 @@ func ReadLines(fileName string) ([]string, error) {
 // specified path and writes the "fext" name there.
 func CreateInstallerFile(path string) error {
 	// https://peps.python.org/pep-0627/#optional-installer-file
-
 	f, err := os.Create(filepath.Join(path, "INSTALLER"))
 	if err != nil {
 		return err

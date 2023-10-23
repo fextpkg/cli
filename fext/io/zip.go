@@ -15,7 +15,7 @@ func unzip(path string) error {
 		return err
 	}
 	defer r.Close()
-	path = filepath.Dir(path) // remove hashsum part
+	path = filepath.Dir(path) // remove hash-sum part
 
 	for _, f := range r.File {
 		fpath := filepath.Join(path, f.Name)
