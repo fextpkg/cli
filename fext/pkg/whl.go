@@ -180,6 +180,11 @@ func (p *Package) GetSize() (int64, error) {
 	return size, nil
 }
 
+// GetMetaDirectoryPath gets absolute path to the package meta directory.
+func (p *Package) GetMetaDirectoryPath() string {
+	return getAbsolutePath(p.metaDir)
+}
+
 // Extra is used simultaneously for dependencies and extra packages
 type Extra struct {
 	Name       string

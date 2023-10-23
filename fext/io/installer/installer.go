@@ -113,6 +113,12 @@ func (i *Installer) install(query *Query) ([]pkg.Extra, error) {
 		return nil, err
 	}
 
+	// Make a note that fext installed this package
+	err = io.CreateInstallerFile(p.GetMetaDirectoryPath())
+	if err != nil {
+		return nil, err
+	}
+
 	return p.Dependencies, nil
 }
 
