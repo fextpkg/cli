@@ -25,9 +25,7 @@ func ParseExtraNames(s string) (string, []string, error) {
 
 		var extraNames []string
 		s = strings.ReplaceAll(s, " ", "")
-		for _, name := range strings.Split(s, ",") {
-			extraNames = append(extraNames, name)
-		}
+		extraNames = append(extraNames, strings.Split(s, ",")...)
 
 		return originalName, extraNames, nil
 	} else if startQuote != -1 || endQuote != -1 {

@@ -11,54 +11,17 @@ import (
 
 // this functions implemented cause golang not support __eq__ methods as a python
 
-// == (equal)
-func eq(a, b int) bool { return a == b }
-
 // == (equal for strings)
 func eqs(a, b string) bool { return a == b }
 
-// != (not equal)
-func ne(a, b int) bool { return a != b }
-
 // != (not equal for strings)
 func nes(a, b string) bool { return a != b }
-
-// <= (less then or equal)
-func lte(a, b int) bool { return a <= b }
-
-// < (less then)
-func lt(a, b int) bool { return a < b }
-
-// >= (greater then or equal)
-func gte(a, b int) bool { return a >= b }
-
-// > (greater then)
-func gt(a, b int) bool { return a > b }
 
 // && (and)
 func and(a, b bool) bool { return a && b }
 
 // || (or)
 func or(a, b bool) bool { return a || b }
-
-func getCompareFunc(operator string) (func(a int, b int) bool, error) {
-	switch operator {
-	case "==":
-		return eq, nil
-	case "!=":
-		return ne, nil
-	case "<=":
-		return lte, nil
-	case "<":
-		return lt, nil
-	case ">=":
-		return gte, nil
-	case ">":
-		return gt, nil
-	default:
-		return nil, errors.New("Unknown operator: " + operator)
-	}
-}
 
 func getStrCompareFunc(operator string) (func(a string, b string) bool, error) {
 	switch operator {

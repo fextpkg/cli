@@ -22,9 +22,9 @@ func getPythonLib() string {
 		panic(err)
 	}
 	// Python directory contains only minor version
-	return fmt.Sprintf("%s/.local/lib/python3.%s/site-packages/", homePath, getPythonMinorVersion())
+	return fmt.Sprintf("%s/.local/lib/python3.%s/site-packages/", homePath, GetPythonMinorVersion())
 }
 
 func getPythonVenvLib() string {
-	return fmt.Sprintf("%s/lib/python3.%s/site-packages/", virtualEnvPath, getPythonMinorVersion())
+	return fmt.Sprintf("%s/lib/python3.%s/site-packages/", virtualEnvPath, GetPythonMinorVersion())
 }

@@ -1,6 +1,7 @@
 package installer
 
 import (
+	"errors"
 	"os"
 
 	"github.com/fextpkg/cli/fext/expression"
@@ -45,7 +46,7 @@ func (i *Installer) supply(queries []*Query) error {
 		} else if len(extra) > 0 {
 			extraPackages, err := getPackageExtras(pkgName, extra)
 			if err != nil {
-				if err == ferror.PackageDirectoryMissing {
+				if errors.Is(err, ferror.PackageDirectoryMissing) {
 					// when trying to install extra dependencies of a package
 					// that not installed, install the package and add this query
 					// to the end
@@ -62,9 +63,7 @@ func (i *Installer) supply(queries []*Query) error {
 			}
 
 			// append extra packages
-			for _, extraQuery := range extraPackages {
-				queries = append(queries, extraQuery)
-			}
+			queries = append(queries, extraPackages...)
 		} else {
 			i.queue <- q
 		}
@@ -118,7 +117,7 @@ func (i *Installer) install(query *Query) ([]pkg.Extra, error) {
 }
 
 // process pops the package from queue and installs it. Parses dependencies
-// of the installed package and append them to queue. Prints the final result
+// of installed package and append them to queue. Prints the final result
 func (i *Installer) process() {
 	for len(i.queue) > 0 {
 		q, open := <-i.queue

@@ -12,7 +12,6 @@ import (
 
 func Freeze() {
 	files, err := os.ReadDir(config.PythonLibPath)
-
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -21,12 +20,14 @@ func Freeze() {
 	var size int64
 	for _, f := range files {
 		dirName := f.Name()
+
 		if f.IsDir() && strings.HasSuffix(dirName, "dist-info") {
 			p, err := pkg.LoadFromMetaDir(dirName)
 			if err == nil {
-				count++
 				s, _ := p.GetSize()
 				size += s
+				count++
+
 				fmt.Printf("%s (%s)\n", p.Name, p.Version)
 			}
 		}

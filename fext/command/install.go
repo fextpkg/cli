@@ -46,7 +46,7 @@ func Install(packages []string) {
 	i := installer.NewInstaller(opt)
 	err := i.InitializePackages(packages)
 	if err != nil {
-		ui.PrintlnError(err.Error())
+		ui.PrintlnError("Failed to initialize packages:", err.Error())
 		return
 	}
 	i.Install()

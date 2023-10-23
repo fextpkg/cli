@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	Version      = "0.2.0"
+	Version      = "0.3.0"
 	DefaultChmod = 0755
 )
 
@@ -22,6 +22,10 @@ var (
 	Flags   []string // Flags specified by user
 )
 
+func GetPythonMinorVersion() string {
+	return strings.Split(PythonVersion, ".")[1]
+}
+
 func getPythonVersion() string {
 	output, err := exec.Command(pythonExec, "--version").Output()
 	if err != nil {
@@ -31,10 +35,6 @@ func getPythonVersion() string {
 	// because during version comparing, the strconv function is used, which clears
 	// them itself
 	return string(output[7:])
-}
-
-func getPythonMinorVersion() string {
-	return strings.Split(PythonVersion, ".")[1]
 }
 
 func getVirtualEnvPath() string {

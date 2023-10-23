@@ -18,7 +18,7 @@ func getPythonLib() string {
 		panic(err)
 	}
 	// Python directory contains only minor version
-	return fmt.Sprintf("%s\\Python\\Python3%s\\site-packages\\", pathToAppData, getPythonMinorVersion())
+	return fmt.Sprintf("%s\\Python\\Python3%s\\site-packages\\", pathToAppData, GetPythonMinorVersion())
 }
 
 func getPythonVenvLib() string {
