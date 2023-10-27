@@ -7,7 +7,7 @@ import (
 )
 
 // ParseExtraNames separates extra dependencies on the name and conditions of the
-// package (PEP 685). Returns pkgName, extraNames and ferror.SyntaxError if
+// package (PEP 685). Returns pkgName, extraNames, and ferror.SyntaxError if
 // syntax is invalid.
 //
 //	ParseExtraNames("package[extra]>=1")
