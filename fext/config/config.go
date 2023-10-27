@@ -1,10 +1,11 @@
 package config
 
 import (
-	"log"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/fextpkg/cli/fext/ui"
 )
 
 const (
@@ -29,7 +30,7 @@ func GetPythonMinorVersion() string {
 func getPythonVersion() string {
 	output, err := exec.Command(pythonExec, "--version").Output()
 	if err != nil {
-		log.Fatal("Unable to get python version. Does python exists?")
+		ui.Fatal("Unable to get python version. Does python exists?")
 	}
 	// Cut off the word "Python". We do not clear the last characters of \r\n,
 	// because during version comparing, the strconv function is used, which clears
@@ -52,7 +53,7 @@ func cutQueryString(s string) (string, bool) {
 	return "", true
 }
 
-// parseArguments is a function for parsing user's query.
+// parseArguments is a function for parsing a user's query.
 // Returns both slice with all flags and slice with command.
 func parseArguments(args []string) ([]string, []string) {
 	var flags, command []string
@@ -68,22 +69,22 @@ func parseArguments(args []string) ([]string, []string) {
 }
 
 func init() {
+	PythonVersion = getPythonVersion()
+
 	// Fill in the variables based on whether the virtual environment is enabled
 	if virtualEnvPath != "" {
-		PythonVersion = getPythonVersion()
 		PythonLibPath = getPythonVenvLib()
 	} else {
-		PythonVersion = getPythonVersion()
 		PythonLibPath = getPythonLib()
 	}
 
-	// Check the presence of python library directory in the system. if not exits,
+	// Check the presence of python library directory in the system. If not exits,
 	// then try to create
 	if _, err := os.Stat(PythonLibPath); err != nil && os.IsNotExist(err) {
 		if err = os.MkdirAll(PythonLibPath, DefaultChmod); err != nil {
-			log.Fatal(err)
+			ui.Fatal(err.Error())
 		}
 	}
 
-	Command, Flags = parseArguments(os.Args[1:]) // First argument is a name of executable file
+	Command, Flags = parseArguments(os.Args[1:]) // The first argument is a name of executable file
 }

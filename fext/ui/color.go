@@ -2,12 +2,11 @@ package ui
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
 // It's lightweight module for colorize text
-// NOTE! Function declares here will work correctly only in Go 1.10+,
-// cause older versions not supported strings Builder.
 
 const (
 	PrefixCode = "\033["
@@ -77,4 +76,9 @@ func PrintfPlus(text string, args ...interface{}) {
 
 func PrintfMinus(text string, args ...interface{}) {
 	fmt.Print(minusString(fmt.Sprintf(text, args...)))
+}
+
+func Fatal(a ...string) {
+	PrintlnError(a...)
+	os.Exit(1)
 }

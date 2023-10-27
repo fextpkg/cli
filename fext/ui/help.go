@@ -2,9 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"runtime"
-
-	"github.com/fextpkg/cli/fext/config"
 )
 
 // PrintHelp prints main help info
@@ -32,18 +29,11 @@ func PrintHelpUninstall() {
 		"\t-d, --dependencies - Remove dependencies of package also")
 }
 
-// PrintDebug prints debug info
-func PrintDebug() {
-	fmt.Printf(
-		"Fext (%s)\n\nLinked to: %s\nOS: %s, arch: %s\n",
-		config.Version,
-		config.PythonLibPath,
-		runtime.GOOS,
-		runtime.GOARCH,
-	)
+func PrintHelpFreeze() {
+	fmt.Println("Available options:\n",
+		"\t-m, --mode=<str> - set the print mode: human (default), pip")
 }
 
-func PrintUnknownOption(opt string, call func()) {
+func PrintUnknownOption(opt string) {
 	PrintlnError("Unknown option:", opt)
-	call()
 }

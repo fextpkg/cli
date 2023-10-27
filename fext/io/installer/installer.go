@@ -13,15 +13,18 @@ import (
 )
 
 type Options struct {
-	NoDependencies bool // without dependencies
-	Silent         bool // prints only error messages
+	// Do not install package dependencies
+	NoDependencies bool
+
+	// Output only error messages
+	QuietMode bool
 }
 
 // DefaultOptions returns an Options struct with default parameters
 func DefaultOptions() *Options {
 	return &Options{
 		NoDependencies: false,
-		Silent:         false,
+		QuietMode:      false,
 	}
 }
 
@@ -137,7 +140,7 @@ func (i *Installer) process() {
 			continue
 		}
 
-		if !i.opt.Silent {
+		if !i.opt.QuietMode {
 			ui.PrintlnPlus(q.pkgName)
 		}
 
@@ -186,7 +189,7 @@ func getPackageExtras(pkgName string, extraNames []string) ([]*Query, error) {
 	for _, extraName := range extraNames {
 		e, ok := p.Extra[extraName]
 		if !ok {
-			return nil, ferror.NewMissingExtra(extraName)
+			return nil, &ferror.MissingExtra{Name: extraName}
 		}
 		for _, extra := range e {
 			if extra.Compatible {
