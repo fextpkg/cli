@@ -21,11 +21,11 @@ type Freeze struct {
 
 // getPrintFunc selects the functions responsible for the specified printMode. If
 // there is not such a function, an error will be returned.
-func (cmd *Freeze) getPrintFunc(mode string) (func(), error) {
-	if mode == "human" {
+func (cmd *Freeze) getPrintFunc() (func(), error) {
+	if cmd.printMode == "human" {
 		return cmd.printStyleHuman, nil
 	} else {
-		return nil, &ferror.UnexpectedMode{Mode: mode}
+		return nil, &ferror.UnexpectedMode{Mode: cmd.printMode}
 	}
 }
 
@@ -117,7 +117,7 @@ func (cmd *Freeze) DetectFlags() error {
 
 // Execute prints a list of packages in the selected printMode.
 func (cmd *Freeze) Execute() {
-	fn, err := cmd.getPrintFunc(cmd.printMode)
+	fn, err := cmd.getPrintFunc()
 	if err != nil {
 		ui.Fatal("Unable to select print mode:", err.Error())
 	}
