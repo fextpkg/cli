@@ -12,7 +12,6 @@ colorized strings, use another terminal like: Cmder, ConEmu, ANSICON or Mintty
 package ui
 
 import (
-	"log"
 	"os"
 
 	"golang.org/x/sys/windows"
@@ -22,13 +21,11 @@ func init() {
 	var originalMode uint32
 	stdout := windows.Handle(os.Stdout.Fd())
 
-	err := windows.GetConsoleMode(stdout, &originalMode)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = windows.SetConsoleMode(stdout, originalMode|windows.ENABLE_VIRTUAL_TERMINAL_PROCESSING)
-	if err != nil {
-		log.Fatal(err)
+	// Add modes only if it is not a redirect
+	if err := windows.GetConsoleMode(stdout, &originalMode); err == nil {
+		mode := originalMode | windows.ENABLE_VIRTUAL_TERMINAL_PROCESSING
+		// In case of an error, the changes are not applied. Continue the work of
+		// application without the support of colorizing.
+		_ = windows.SetConsoleMode(stdout, mode)
 	}
 }
