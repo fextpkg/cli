@@ -2,10 +2,11 @@ package io
 
 import (
 	"bufio"
-	"github.com/fextpkg/cli/fext/config"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/fextpkg/cli/fext/config"
 )
 
 // ReadLines reads lines from the file and splits them through "\n".
