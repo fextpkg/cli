@@ -19,8 +19,8 @@ type Freeze struct {
 	metaDirectories []string
 }
 
-// getPrintFunc selects the functions responsible for the specified print printMode.
-// If there is not such a function, an error will be returned.
+// getPrintFunc selects the functions responsible for the specified printMode. If
+// there is not such a function, an error will be returned.
 func (cmd *Freeze) getPrintFunc(mode string) (func(), error) {
 	if mode == "human" {
 		return cmd.printStyleHuman, nil
@@ -97,15 +97,15 @@ func (cmd *Freeze) DetectFlags() error {
 	for _, f := range config.Flags {
 		if f == "h" || f == "help" { // Help flag
 			return ferror.HelpFlag
-		} else if strings.HasPrefix(f, "m=") || strings.HasPrefix(f, "printMode=") {
-			// Print style printMode. To preserve performance and foundation, we do not add a
+		} else if strings.HasPrefix(f, "m=") || strings.HasPrefix(f, "mode=") {
+			// Print style mode. To preserve performance and foundation, we do not add a
 			// structure for flags with a value. Instead, parse these flag in only "freeze"
 			// command. But it may have to be redone in the future. Who knows…
 			cmd.printMode = strings.SplitN(f, "=", 2)[1]
 			if cmd.printMode == "" { // Empty value
 				return &ferror.MissingOptionValue{Opt: f[:len(f)-1]}
 			}
-		} else if f == "m" || f == "printMode" { // Passed "printMode" option without value
+		} else if f == "m" || f == "mode" { // Passed "mode" option without value
 			return &ferror.MissingOptionValue{Opt: f}
 		} else { // Unexpected flag
 			return &ferror.UnknownFlag{Flag: f}
