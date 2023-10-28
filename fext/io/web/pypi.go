@@ -7,8 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fextpkg/cli/fext/ferror"
 	"golang.org/x/net/html"
+
+	"github.com/fextpkg/cli/fext/ferror"
 
 	"github.com/fextpkg/cli/fext/config"
 	"github.com/fextpkg/cli/fext/expression"
