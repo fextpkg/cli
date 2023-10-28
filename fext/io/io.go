@@ -29,6 +29,24 @@ func ReadLines(fileName string) ([]string, error) {
 	return result, f.Close()
 }
 
+// ReadLinesWithComments reads file using ReadLines, but ignores commented-out
+// lines starting with "#".
+func ReadLinesWithComments(fileName string) ([]string, error) {
+	var result []string
+	rawLines, err := ReadLines(fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, line := range rawLines {
+		if !strings.HasPrefix(line, "#") {
+			result = append(result, line)
+		}
+	}
+
+	return result, nil
+}
+
 // CreateInstallerFile creates a file named "INSTALLER" (PEP 627) in the
 // specified path and writes the "fext" name there.
 func CreateInstallerFile(path string) error {

@@ -26,7 +26,7 @@ type Install struct {
 func (cmd *Install) getPackagesFromFiles() ([]string, error) {
 	var packages []string
 	for _, fileName := range cmd.packages {
-		p, err := io.ReadLines(fileName)
+		p, err := io.ReadLinesWithComments(fileName)
 		if err != nil {
 			return nil, err
 		}
