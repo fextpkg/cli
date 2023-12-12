@@ -35,14 +35,26 @@ func (e *UnknownFlag) Error() string {
 	return "unknown flag: " + e.Flag
 }
 
-func NewUnknownFlag(flag string) error {
-	return &UnknownFlag{Flag: flag}
-}
-
 type MissingOptionValue struct {
 	Opt string
 }
 
 func (e *MissingOptionValue) Error() string {
 	return "option '" + e.Opt + "': missing value"
+}
+
+type UnexpectedMarker struct {
+	Marker string
+}
+
+func (e *UnexpectedMarker) Error() string {
+	return "unexpected marker: " + e.Marker
+}
+
+type UnexpectedOperator struct {
+	Operator string
+}
+
+func (u *UnexpectedOperator) Error() string {
+	return "unexpected operator: " + u.Operator
 }

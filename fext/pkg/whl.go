@@ -17,8 +17,20 @@ type Package struct {
 	Name    string
 	Version string
 
-	Dependencies []Extra
-	Extra        map[string][]Extra
+	Extras []string
+
+	Dependencies []Dependency
+}
+
+// Dependency used for both dependencies and extra packages simultaneously
+type Dependency struct {
+	rawValue string
+	markers  string
+	isExtra  bool
+
+	// Attributes to be filled during processing and comparison of rawValue
+	PackageName string
+	Conditions  []expression.Condition
 }
 
 func Load(pkgName string) (*Package, error) {
@@ -30,8 +42,8 @@ func Load(pkgName string) (*Package, error) {
 	p := Package{
 		Name:         pkgName,
 		metaDir:      dirName,
-		Dependencies: []Extra{},
-		Extra:        map[string][]Extra{},
+		Dependencies: []Dependency{},
+		Extras:       []string{},
 	}
 	if err = p.parseMetaData(); err != nil {
 		return nil, err
@@ -43,8 +55,8 @@ func Load(pkgName string) (*Package, error) {
 func LoadFromMetaDir(metaDir string) (*Package, error) {
 	p := Package{
 		metaDir:      metaDir,
-		Dependencies: []Extra{},
-		Extra:        map[string][]Extra{},
+		Dependencies: []Dependency{},
+		Extras:       []string{},
 	}
 	if err := p.parseMetaData(); err != nil {
 		return nil, err
@@ -58,42 +70,24 @@ func (p *Package) parseMetaData() error {
 		return err
 	}
 
-	var extraName string
-	for _, s := range strings.Split(strings.SplitN(string(data), "\n\n", 2)[0], "\n") {
-		// FIXME: this a temporary solution that will be rewritten in the future
-		if s != "" && (s[0] == 'R' || s[0] == 'P' || s[0] == 'V' || s[0] == 'N') {
+	for _, s := range strings.Split(string(data), "\n") {
+		s = strings.TrimSpace(s)
+		if s != "" {
 			field := strings.SplitN(s, ": ", 2)
-			if field[0] == "Requires-Dist" {
-				e := Extra{Compatible: true}
-				value := strings.Split(field[1], ";") // [name_and_conditions, markers]
-				if len(value) == 2 {
-					e.Compatible, err = expression.CompareExpression(value[1])
-					if err != nil {
-						return err
-					}
-				}
-				value = strings.Split(value[0], " ") // [name, conditions]
-				if len(value) > 1 {
-					_, e.Conditions = expression.ParseConditions(value[1])
-				}
-				e.Name = value[0]
+			key, value := field[0], field[1]
 
-				if extraName != "" {
-					if _e, found := p.Extra[extraName]; found {
-						p.Extra[extraName] = append(_e, e)
-					} else {
-						p.Extra[extraName] = []Extra{e}
-					}
-				} else {
-					p.Dependencies = append(p.Dependencies, e)
-				}
-			} else if field[0] == "Provides-Extra" {
-				extraName = field[1]
-			} else if field[0] == "Version" {
-				p.Version = strings.Replace(field[1], "\r", "", 1)
-			} else if field[0] == "Name" {
-				p.Name = strings.Replace(field[1], "\r", "", 1)
+			switch key {
+			case "Requires-Dist":
+				p.Dependencies = append(p.Dependencies, parseRequirement(value))
+			case "Provides-Extra":
+				p.Extras = append(p.Extras, value)
+			case "Version":
+				p.Version = value
+			case "Name":
+				p.Name = value
 			}
+		} else {
+			break
 		}
 	}
 	return nil
@@ -185,11 +179,50 @@ func (p *Package) GetMetaDirectoryPath() string {
 	return getAbsolutePath(p.metaDir)
 }
 
-// Extra is used simultaneously for dependencies and extra packages
-type Extra struct {
-	Name       string
-	Conditions []expression.Condition
-	Compatible bool
+func (p *Package) GetDependencies() []Dependency {
+	var packages []Dependency
+
+	for _, dep := range p.Dependencies {
+		if !dep.isExtra {
+			dep.PackageName, dep.Conditions = expression.ParseConditions(dep.rawValue)
+			packages = append(packages, dep)
+		}
+	}
+
+	return packages
+}
+
+// GetExtraDependencies retrieves compatible extra dependencies and returns an
+// empty slice if none are found.
+// Returns an error if there are any issues during metadata parsing.
+func (p *Package) GetExtraDependencies(extraName string) ([]Dependency, error) {
+	var extraPackages []Dependency
+
+	for _, dep := range p.Dependencies {
+		if dep.isExtra {
+			// Initially, verify if the expression has the "extra" marker
+			// with the required value
+			match, err := expression.MatchExtraName(dep.markers, extraName)
+			if err != nil {
+				return nil, err
+			} else if match {
+				// After a successful search, validate the entire expression for
+				// truth, considering that some extra dependencies may include
+				// additional markers themselves
+				compatible, err := expression.CompareMarkers(dep.markers)
+				if err != nil {
+					return nil, err
+				} else if compatible {
+					// Lastly, parse the conditions and extract the
+					// package name for further handling
+					dep.PackageName, dep.Conditions = expression.ParseConditions(dep.rawValue)
+					extraPackages = append(extraPackages, dep)
+				}
+			}
+		}
+	}
+
+	return extraPackages, nil
 }
 
 // formatName formats the directory name to a single view
@@ -245,4 +278,22 @@ func getPackageMetaDir(pkgName string) (string, error) {
 	}
 
 	return "", ferror.PackageDirectoryMissing
+}
+
+func parseRequirement(s string) Dependency {
+	var markers string
+
+	// [name_and_conditions, markers]
+	exp := strings.SplitN(s, "; ", 2)
+	if len(exp) > 1 { // Has markers
+		markers = exp[1]
+	} else { // No markers provided
+		markers = ""
+	}
+
+	return Dependency{
+		rawValue: exp[0],
+		markers:  markers,
+		isExtra:  strings.Contains(markers, "extra"),
+	}
 }

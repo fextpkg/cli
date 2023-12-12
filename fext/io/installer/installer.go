@@ -77,7 +77,7 @@ func (i *Installer) supply(queries []*Query) error {
 
 // install installs a single package. Returns its dependencies or an error in
 // case of failure
-func (i *Installer) install(query *Query) ([]pkg.Extra, error) {
+func (i *Installer) install(query *Query) ([]pkg.Dependency, error) {
 	req := web.NewRequest(query.pkgName, query.conditions)
 
 	version, link, err := req.GetPackageData()
@@ -122,7 +122,7 @@ func (i *Installer) install(query *Query) ([]pkg.Extra, error) {
 		return nil, err
 	}
 
-	return p.Dependencies, nil
+	return p.GetDependencies(), nil
 }
 
 // process pops the package from queue and installs it. Parses dependencies
@@ -187,14 +187,15 @@ func getPackageExtras(pkgName string, extraNames []string) ([]*Query, error) {
 	}
 
 	for _, extraName := range extraNames {
-		e, ok := p.Extra[extraName]
-		if !ok {
+		e, err := p.GetExtraDependencies(extraName)
+		if err != nil {
+			return nil, err
+		} else if len(e) == 0 {
 			return nil, &ferror.MissingExtra{Name: extraName}
 		}
-		for _, extra := range e {
-			if extra.Compatible {
-				queries = append(queries, newQuery(extra.Name, extra.Conditions))
-			}
+
+		for _, dep := range e {
+			queries = append(queries, newQuery(dep.PackageName, dep.Conditions))
 		}
 	}
 

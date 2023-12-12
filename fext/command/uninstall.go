@@ -24,10 +24,10 @@ func (cmd *Uninstall) uninstall(pkgName string) error {
 	}
 
 	if cmd.collectDependencies {
-		for _, dep := range p.Dependencies {
+		for _, dep := range p.GetDependencies() {
 			// Recursion is used here because the uninstallation command is not in use
 			// priority. In the future it will be redone by safe uninstalling (issue #1)
-			cmd.uninstall(dep.Name)
+			cmd.uninstall(dep.PackageName)
 		}
 	}
 

@@ -28,13 +28,11 @@ func newQuery(pkgName string, conditions []expression.Condition) *Query {
 	}
 }
 
-// extrasToQuery converts the pkg.Extra list to a Query list
-func extrasToQuery(extras []pkg.Extra) []*Query {
+// extrasToQuery converts the pkg.Dependency list to a Query list
+func extrasToQuery(extras []pkg.Dependency) []*Query {
 	var q []*Query
 	for _, extraPackage := range extras {
-		if extraPackage.Compatible {
-			q = append(q, newQuery(extraPackage.Name, extraPackage.Conditions))
-		}
+		q = append(q, newQuery(extraPackage.PackageName, extraPackage.Conditions))
 	}
 
 	return q

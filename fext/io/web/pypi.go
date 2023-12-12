@@ -213,7 +213,7 @@ func parseAttrs(attrs []html.Attribute) (string, string) {
 // is returned in case of an incorrect operator or version.
 func compareVersion(version string, conditions []expression.Condition) (bool, error) {
 	for _, cond := range conditions {
-		ok, err := expression.CompareVersion(version, cond.Op, cond.Value)
+		ok, err := expression.CompareVersion(version, cond.Operator, cond.Value)
 		if !ok {
 			if err != nil {
 				return false, err

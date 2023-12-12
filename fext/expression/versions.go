@@ -8,8 +8,8 @@ import (
 )
 
 type Condition struct {
-	Value string
-	Op    string
+	Value    string
+	Operator string
 }
 
 // parseVersion splits the version into semantic parts (major, minor, patch, pre)
@@ -128,7 +128,7 @@ func CompareVersion(v1, op, v2 string) (bool, error) {
 
 // ParseConditions split package name and conditions. Separator can be anything,
 // and it also may not exist. Returns package name, conditions. Example:
-// "name<=4.0.0 >=4.0.0" => name, [(<=, 4.0.0), (>=, 4.0.0)]
+// "name<=4.0.0 >=4.0.0" => name, [(4.0.0, <=), (4.0.0, >=)]
 func ParseConditions(exp string) (string, []Condition) {
 	var cond []Condition
 	re := regexp.MustCompile(`([<>!=]=?)([\w\.]+)`)
@@ -136,8 +136,8 @@ func ParseConditions(exp string) (string, []Condition) {
 
 	for _, value := range v {
 		cond = append(cond, Condition{
-			Value: value[2],
-			Op:    value[1],
+			Value:    value[2],
+			Operator: value[1],
 		}) // value[baseValue, operator, value]
 	}
 
