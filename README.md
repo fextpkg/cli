@@ -28,7 +28,7 @@ To uninstall:
 ```shell
 fext u(ninstall) <package(s)> # fext u aiohttp
 ```
-More commands can be found in [documentation](https://fext.lunte.dev/commands.html).
+More commands can be found in [documentation](https://fext.lunte.dev/getting-started.html).
 
 ## 🚩 Bugs
 If you encounter some bugs or problems, please be free to use [Issues page](https://github.com/fextpkg/cli/issues).
