@@ -73,6 +73,10 @@ func TestCutQueryString(t *testing.T) {
 		assert.False(t, isCommand)
 		assert.Equal(t, s, expected)
 	}
+
+	s, isCommand := cutQueryString("")
+	assert.True(t, isCommand)
+	assert.Empty(t, s)
 }
 
 func TestParseArguments(t *testing.T) {
@@ -92,4 +96,10 @@ func TestParseArguments(t *testing.T) {
 	parsedCommands, parsedFlags = parseArguments(append(commands, inputFlags...))
 	assert.Len(t, parsedCommands, len(commands))
 	assert.Len(t, parsedFlags, len(inputFlags))
+}
+
+func TestGetPythonLib(t *testing.T) {
+	for _, path := range []string{getPythonLib(), getPythonVenvLib()} {
+		assert.Contains(t, path, "site-packages")
+	}
 }
