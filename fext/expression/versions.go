@@ -1,10 +1,15 @@
 package expression
 
 import (
-	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/fextpkg/cli/fext/ferror"
+)
+
+var (
+	operatorList = []rune{'>', '<', '=', '!'}
 )
 
 type Condition struct {
@@ -12,20 +17,29 @@ type Condition struct {
 	Operator string
 }
 
-// parseVersion splits the version into semantic parts (major, minor, patch, pre)
-// and returns them in the form [3]int{major, minor, patch}, pre. Returns an error
-// if version could not be converted to int
+// parseVersion parses and splits the version into four semantic parts:
+// major, minor, patch, and pre. It returns an array of the first three parts
+// and separately returns the pre-version.
+// If the pre-version is not provided, it will return 0. If any part is missing,
+// it will be replaced with 0. Therefore, if an empty string is passed,
+// an array of zeros will be returned. It throws an error if there is a syntax
+// violation (error during the conversion to a number).
 func parseVersion(s string) ([3]int, int, error) {
 	var output [3]int
 	var pre int
+
 	parts := strings.Split(s, ".")
-	length := len(parts)
+	partsCount := len(parts)
 
 	for i := 0; i < 3; i++ {
-		if i < length {
+		// Iterate only over existing elements and replace the rest with zeros
+		if i < partsCount {
 			value := parts[i]
 			intValue, err := strconv.Atoi(value)
-			if err != nil { // string contains characters
+			if err != nil {
+				// We receive an error if the string contains letters.
+				// This means that the loop has reached the patch version and
+				// it contains the pre-version
 				intValue, pre, err = parsePreVersion(value)
 				if err != nil {
 					return output, 0, err
@@ -40,38 +54,48 @@ func parseVersion(s string) ([3]int, int, error) {
 	return output, pre, nil
 }
 
-// parsePreVersion separates patch and pre version. Example: 1a2 => 1, 147
-// (a is 97, 2 is 50 => 97 + 50 = 147). Returns an error if version could not be
-// converted to int
+// parsePreVersion parses the version segment that contains letters and splits
+// it into two parts: the patch version and the pre-version.
+// It accepts the patch version as an argument and returns the split version numbers.
+// If a regular number (without letters) or an empty string is passed, it will
+// return two zeros without any errors.
 func parsePreVersion(s string) (int, int, error) {
 	var patchValue, preValue int
 	var err error
+
 	for i, v := range s {
-		if !unicode.IsDigit(v) { // find first character
-			patchValue, err = strconv.Atoi(s[:i]) // cut part with characters and convert
-			if err != nil {                       // unknown error
+		// First, we search for the index of the letter
+		if !unicode.IsDigit(v) {
+			// Next, we convert everything before it into a number
+			patchValue, err = strconv.Atoi(s[:i])
+			// TODO: replace this hack with a proper check for alpha, beta,
+			// or release candidate
+			if err != nil { // unknown error
 				return 0, 0, err
 			}
-			preValue, err = convertStrToInt(s[i:]) // convert part with characters
-			if err != nil {
-				return 0, 0, err
-			}
+			// Then, we utilize a small hack and convert the entire string
+			// after the letter into a number
+			preValue = getStringIndexSum(s[i:])
 			break
 		}
 	}
+
 	return patchValue, preValue, nil
 }
 
-func convertStrToInt(s string) (int, error) {
+// getStringIndexSum converts each character from the string into its index
+// and returns the sum of the indices.
+func getStringIndexSum(s string) int {
 	var output int
 	for _, v := range s {
 		output += int(v)
 	}
-	return output, nil
+
+	return output
 }
 
-// compareVersion returns the result of a comparison between versions. If a > b,
-// 1 will be returned, if a < b -1 will be returned, if a == b 0 will be returned
+// compareVersion returns the comparison result between versions.
+// If a > b, it returns 1. If a < b, it returns -1. If a == b, it returns 0.
 func compareVersion(a, b string) (int, error) {
 	v1, v1pre, err := parseVersion(a)
 	if err != nil {
@@ -82,7 +106,8 @@ func compareVersion(a, b string) (int, error) {
 		return 0, err
 	}
 
-	for i := 0; i < 3; i++ { // compare major, minor and patch version
+	// First, we compare the first three semantic parts
+	for i := 0; i < 3; i++ {
 		if v1[i] > v2[i] {
 			return 1, nil
 		} else if v2[i] > v1[i] {
@@ -90,6 +115,7 @@ func compareVersion(a, b string) (int, error) {
 		}
 	}
 
+	// If the above comparison fails, compare the pre-version
 	if v1pre&v2pre != 0 {
 		if v1pre > v2pre {
 			return 1, nil
@@ -98,12 +124,13 @@ func compareVersion(a, b string) (int, error) {
 		}
 	}
 
+	// All values are identical to each other
 	return 0, nil
 }
 
 // CompareVersion works by means of comparing each part of the version. The
 // version is divided into semantic parts (major, minor, patch, pre) and
-// converted into numbers that are compared one after another. For example:
+// converted into numbers that are compared one after another. For example,
 // 4.0.0a >= 4.0.0rc2 will return the result false because alpha build has less
 // weight than release candidate build.
 //
@@ -116,32 +143,71 @@ func CompareVersion(v1, op, v2 string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	if res < 0 && (op == "<" || op == "<=" || op == "!=") {
 		return true, nil
 	} else if res > 0 && (op == ">" || op == ">=" || op == "!=") {
 		return true, nil
 	} else if res == 0 && (op == "==" || op == ">=" || op == "<=") {
 		return true, nil
+	} else if !strings.ContainsAny(op, "><=!") {
+		return false, &ferror.UnexpectedOperator{Operator: op}
 	}
+
 	return false, nil
 }
 
-// ParseConditions split package name and conditions. Separator can be anything,
-// and it also may not exist. Returns package name, conditions. Example:
-// "name<=4.0.0 >=4.0.0" => name, [(4.0.0, <=), (4.0.0, >=)]
-func ParseConditions(exp string) (string, []Condition) {
-	var cond []Condition
-	re := regexp.MustCompile(`([<>!=]=?)([\w\.]+)`)
-	v := re.FindAllStringSubmatch(strings.ReplaceAll(exp, " ", ""), -1)
-
-	for _, value := range v {
-		cond = append(cond, Condition{
-			Value:    value[2],
-			Operator: value[1],
-		}) // value[baseValue, operator, value]
+// isOperator checks if a rune corresponds to a specific operator symbol.
+func isOperator(char rune) bool {
+	for _, op := range operatorList {
+		if op == char {
+			return true
+		}
 	}
 
-	// split name
-	re, _ = regexp.Compile(`[\w|\-.\[\]]+`)
-	return re.FindString(exp), cond
+	return false
+}
+
+// splitConditions separates the comparison operator from the value and
+// combines them. Returns a list of operators with their values.
+func splitConditions(exp string) []Condition {
+	var cond []Condition
+	var op, version strings.Builder
+
+	// Use a small trick by adding the operator to the end of the string.
+	// This helps to avoid unnecessary code snippets.
+	for _, char := range exp + "<" {
+		if isOperator(char) {
+			// Checking if the operator is the first one in the expression
+			if version.Len() != 0 {
+				cond = append(cond, Condition{
+					Value:    version.String(),
+					Operator: op.String(),
+				})
+				op.Reset()
+				version.Reset()
+			}
+
+			op.WriteRune(char)
+		} else {
+			version.WriteRune(char)
+		}
+	}
+
+	return cond
+}
+
+// ParseConditions separates the package name from the operators.
+// The expressions must not contain spaces. Returns the package name and a list
+// of operators with their values.
+func ParseConditions(exp string) (string, []Condition) {
+	for i, char := range exp {
+		// Iterate through the string in search of an operator
+		if isOperator(char) {
+			// Split the package name and obtain the operators for the query
+			return exp[:i], splitConditions(exp[i:])
+		}
+	}
+
+	return exp, nil
 }

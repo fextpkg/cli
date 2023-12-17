@@ -2,6 +2,7 @@ package installer
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/fextpkg/cli/fext/expression"
@@ -53,6 +54,7 @@ func (i *Installer) supply(queries []*Query) error {
 					// when trying to install extra dependencies of a package
 					// that not installed, install the package and add this query
 					// to the end
+					// FIXME: separate name and conditions and requeue
 					deps, err := i.install(newRawQuery(pkgName))
 					if err != nil {
 						return err
@@ -79,6 +81,7 @@ func (i *Installer) supply(queries []*Query) error {
 // case of failure
 func (i *Installer) install(query *Query) ([]pkg.Dependency, error) {
 	req := web.NewRequest(query.pkgName, query.conditions)
+	fmt.Println(query.pkgName, query.conditions)
 
 	version, link, err := req.GetPackageData()
 	if err != nil {

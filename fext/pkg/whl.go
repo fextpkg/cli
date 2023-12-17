@@ -202,7 +202,7 @@ func (p *Package) GetExtraDependencies(extraName string) ([]Dependency, error) {
 		if dep.isExtra {
 			// Initially, verify if the expression has the "extra" marker
 			// with the required value
-			match, err := expression.MatchExtraName(dep.markers, extraName)
+			match, err := expression.MatchExtraMarker(dep.markers, extraName)
 			if err != nil {
 				return nil, err
 			} else if match {

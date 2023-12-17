@@ -13,38 +13,30 @@ type expression struct {
 	op string
 }
 
-// Helper functions for comparing strings and logical operators
-
-// == (equal for strings)
-func eqs(a, b string) bool { return a == b }
-
-// != (not equal for strings)
-func nes(a, b string) bool { return a != b }
-
-// && (and)
-func and(a, b bool) bool { return a && b }
-
-// || (or)
-func or(a, b bool) bool { return a || b }
-
-func getStrCompareFunc(operator string) (func(a string, b string) bool, error) {
+// CompareString compares the given values using the specified comparison
+// operator for secure evaluation of Python string expressions.
+// In case of an unexpected comparison operator, it returns an error.
+func CompareString(a, operator, b string) (bool, error) {
 	if operator == "==" {
-		return eqs, nil
+		return a == b, nil
 	} else if operator == "!=" {
-		return nes, nil
+		return a != b, nil
+	} else {
+		return false, &ferror.UnexpectedOperator{Operator: operator}
 	}
-
-	return nil, &ferror.UnexpectedOperator{Operator: operator}
 }
 
+// compareBool compares two boolean values using the specified operator.
+// It is commonly used to evaluate and compare results from other expressions.
+// It returns an error if an unexpected logical operator is passed.
 func compareBool(a, b bool, operator string) (bool, error) {
 	if operator == "and" {
-		return and(a, b), nil
+		return a && b, nil
 	} else if operator == "or" {
-		return or(a, b), nil
+		return a || b, nil
+	} else {
+		return false, &ferror.UnexpectedOperator{Operator: operator}
 	}
-
-	return false, &ferror.UnexpectedOperator{Operator: operator}
 }
 
 // Find the first deepest occurrence pair of parentheses.
@@ -65,12 +57,15 @@ func getBracketIndexes(s string) (int, int) {
 // Parses expressions with a comparison operator and completed comparisons.
 // Note that if the expression has already been compared (the string contains
 // "true" or "false"), the attributes "v2" and "op" will be empty.
+// Returns an error in case of syntax violation.
 func parseExpressionWithOperators(s string) ([]expression, error) {
 	var output []expression
 	var exp expression
 
 	delimitedString := strings.Split(s, " ")
-	length := len(delimitedString)
+	// Subtract one to enable comparison with the index
+	length := len(delimitedString) - 1
+
 	for i, sequence := range delimitedString {
 		if strings.ContainsAny(sequence, "><=!") {
 			// Verify that there are elements on both sides
@@ -86,6 +81,10 @@ func parseExpressionWithOperators(s string) ([]expression, error) {
 				v2: delimitedString[i+1],
 				op: sequence,
 			}
+			// TODO: here it may be worth to adding a check for the logical
+			// operators or comparison operators on the left and right side.
+			// In other words, if they are present, immediately return a SyntaxError.
+			// Otherwise, the events will be unpredictable
 			exp.v2 = exp.v2[1 : len(exp.v2)-1] // remove quotes
 		} else if sequence == "true" || sequence == "false" {
 			// Since we are overwriting the comparison with its result,
@@ -157,8 +156,4 @@ func CompareMarkers(exp string) (bool, error) {
 			return compareExpressionWithMarkers(exp)
 		}
 	}
-}
-
-func MatchExtraName(exp, extraName string) (bool, error) {
-	return parseExtraMarker(exp, extraName)
 }
