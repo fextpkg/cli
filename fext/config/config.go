@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/fextpkg/cli/fext/ui"
@@ -74,9 +75,9 @@ func init() {
 
 	// Fill in the variables based on whether the virtual environment is enabled
 	if virtualEnvPath != "" {
-		PythonLibPath = getPythonVenvLib()
+		PythonLibPath = filepath.Clean(getPythonVenvLib())
 	} else {
-		PythonLibPath = getPythonLib()
+		PythonLibPath = filepath.Clean(getPythonLib())
 	}
 
 	// Check the presence of python library directory in the system. If not exits,
