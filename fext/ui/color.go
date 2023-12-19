@@ -102,3 +102,8 @@ func Fatal(a ...string) {
 	PrintlnError(a...)
 	os.Exit(1)
 }
+
+func Fatalf(text string, args ...interface{}) {
+	PrintfError(text, args...)
+	os.Exit(1)
+}

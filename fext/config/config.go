@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/fextpkg/cli/fext/ui"
@@ -32,10 +33,9 @@ func getPythonVersion() string {
 	if err != nil {
 		ui.Fatal("Unable to get python version. Does python exists?")
 	}
-	// Cut off the word "Python". We do not clear the last characters of \r\n,
-	// because during version comparing, the strconv function is used, which clears
-	// them itself
-	return string(output[7:])
+
+	// Cut off the word "Python" and any escaped characters
+	return strings.TrimSpace(string(output[7:]))
 }
 
 func getVirtualEnvPath() string {
@@ -50,11 +50,12 @@ func cutQueryString(s string) (string, bool) {
 			return s[i:], i == 0
 		}
 	}
+
 	return "", true
 }
 
 // parseArguments is a function for parsing a user's query.
-// Returns both slice with all flags and slice with command.
+// Returns both slice with command and slice with all flags.
 func parseArguments(args []string) ([]string, []string) {
 	var flags, command []string
 	for _, v := range args {
@@ -65,6 +66,7 @@ func parseArguments(args []string) ([]string, []string) {
 			flags = append(flags, cutString)
 		}
 	}
+
 	return command, flags
 }
 
@@ -73,9 +75,9 @@ func init() {
 
 	// Fill in the variables based on whether the virtual environment is enabled
 	if virtualEnvPath != "" {
-		PythonLibPath = getPythonVenvLib()
+		PythonLibPath = filepath.Clean(getPythonVenvLib())
 	} else {
-		PythonLibPath = getPythonLib()
+		PythonLibPath = filepath.Clean(getPythonLib())
 	}
 
 	// Check the presence of python library directory in the system. If not exits,

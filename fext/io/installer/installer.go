@@ -53,6 +53,7 @@ func (i *Installer) supply(queries []*Query) error {
 					// when trying to install extra dependencies of a package
 					// that not installed, install the package and add this query
 					// to the end
+					// FIXME: separate name and conditions and requeue
 					deps, err := i.install(newRawQuery(pkgName))
 					if err != nil {
 						return err

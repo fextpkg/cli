@@ -104,7 +104,7 @@ func (p *Package) getTopLevel() ([]string, error) {
 		}
 		// add the package name manually, since some generators do not create a
 		// "top_level.txt" file
-		files = []string{p.Name}
+		files = []string{formatName(p.Name)}
 	}
 	return files, nil
 }
@@ -202,7 +202,7 @@ func (p *Package) GetExtraDependencies(extraName string) ([]Dependency, error) {
 		if dep.isExtra {
 			// Initially, verify if the expression has the "extra" marker
 			// with the required value
-			match, err := expression.MatchExtraName(dep.markers, extraName)
+			match, err := expression.MatchExtraMarker(dep.markers, extraName)
 			if err != nil {
 				return nil, err
 			} else if match {
@@ -244,7 +244,7 @@ func clearVersion(version string) string {
 
 // getAbsolutePath returns absolute path to the file in directory with packages
 func getAbsolutePath(elem ...string) string {
-	return filepath.Clean(config.PythonLibPath) + string(os.PathSeparator) + filepath.Join(elem...)
+	return config.PythonLibPath + string(os.PathSeparator) + filepath.Join(elem...)
 }
 
 // Parse directory by format "%pkgName%-%version%.%format%" and returns it
