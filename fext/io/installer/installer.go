@@ -2,7 +2,6 @@ package installer
 
 import (
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/fextpkg/cli/fext/expression"
@@ -81,7 +80,6 @@ func (i *Installer) supply(queries []*Query) error {
 // case of failure
 func (i *Installer) install(query *Query) ([]pkg.Dependency, error) {
 	req := web.NewRequest(query.pkgName, query.conditions)
-	fmt.Println(query.pkgName, query.conditions)
 
 	version, link, err := req.GetPackageData()
 	if err != nil {

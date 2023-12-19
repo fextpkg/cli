@@ -1,8 +1,6 @@
 package installer
 
 import (
-	"fmt"
-
 	"github.com/fextpkg/cli/fext/expression"
 	"github.com/fextpkg/cli/fext/pkg"
 )
@@ -16,7 +14,6 @@ type Query struct {
 // newRawQuery pre-parses conditional statements and creates a new query
 func newRawQuery(s string) *Query {
 	pkgName, conditions := expression.ParseConditions(s)
-	fmt.Println(">>", s, pkgName, conditions)
 	return &Query{
 		pkgName:    pkgName,
 		conditions: conditions,
