@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -177,6 +178,8 @@ func TestPackage_Load(t *testing.T) {
 }
 
 func TestPackage_LoadFromMetaDir(t *testing.T) {
+	err := createTestPackage()
+	assert.Nil(t, err)
 	p, err := Load(PackageName)
 	assert.Nil(t, err)
 
@@ -201,14 +204,13 @@ func TestPackage_LoadMissing(t *testing.T) {
 func TestPackage_ParseMetaDataError(t *testing.T) {
 	name, err := createBrokenPackage()
 	assert.Nil(t, err)
+	t.Cleanup(func() { cleanUpPackage(name) })
 
 	_, err = Load(name)
 	assert.NotNil(t, err)
 
 	_, err = LoadFromMetaDir(formatMetaDirectory(name))
 	assert.NotNil(t, err)
-
-	t.Cleanup(func() { cleanUpPackage(name) })
 }
 
 func TestGetPackageMetaDirFail(t *testing.T) {
@@ -218,13 +220,18 @@ func TestGetPackageMetaDirFail(t *testing.T) {
 	cleanUpPackage(PackageName)
 	err = createTestPackage()
 	assert.Nil(t, err)
+	t.Cleanup(func() { cleanUpPackage(PackageName) })
 
 	normalPackage, err := Load(PackageName)
 	assert.Nil(t, err)
 
 	// change for tests
 	pythonLibPath := config.PythonLibPath
-	config.PythonLibPath = "//"
+	if runtime.GOOS == "windows" {
+		config.PythonLibPath = "//"
+	} else {
+		config.PythonLibPath = "/dev/null"
+	}
 
 	// tests
 	_, err = getPackageMetaDir(PackageName)
@@ -245,13 +252,12 @@ func TestGetPackageMetaDirFail(t *testing.T) {
 
 	// restore
 	config.PythonLibPath = pythonLibPath
-
-	t.Cleanup(func() { cleanUpPackage(PackageName) })
 }
 
 func TestBrokenMetadata(t *testing.T) {
 	name, err := createBrokenPackage()
 	assert.Nil(t, err)
+	t.Cleanup(func() { cleanUpPackage(name) })
 
 	metaDirectoryPath := getAbsolutePath(formatMetaDirectory(name))
 	metadataFilePath := filepath.Join(metaDirectoryPath, "METADATA")
@@ -277,6 +283,4 @@ func TestBrokenMetadata(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.ErrorIs(t, err, ferror.SyntaxError)
 	assert.Zero(t, deps)
-
-	t.Cleanup(func() { cleanUpPackage(name) })
 }

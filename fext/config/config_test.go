@@ -1,7 +1,6 @@
 package config
 
 import (
-	"io/fs"
 	"os"
 	"regexp"
 	"testing"
@@ -41,7 +40,8 @@ func TestPythonMinorVersion(t *testing.T) {
 }
 
 func TestPythonPath(t *testing.T) {
-	assert.True(t, fs.ValidPath(PythonLibPath))
+	_, err := os.Stat(PythonLibPath)
+	assert.Nil(t, err)
 }
 
 func TestVirtualEnvPath(t *testing.T) {
