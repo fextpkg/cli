@@ -168,6 +168,10 @@ func isOperator(char rune) bool {
 	return false
 }
 
+func isParentheses(char rune) bool {
+	return char == ')' || char == '('
+}
+
 // splitConditions separates the comparison operator from the value and
 // combines them. Returns a list of operators with their values.
 func splitConditions(exp string) []Condition {
@@ -198,14 +202,19 @@ func splitConditions(exp string) []Condition {
 }
 
 // ParseConditions separates the package name from the operators.
-// The expressions must not contain spaces. Returns the package name and a list
-// of operators with their values.
+// Returns the package name and a list of operators with their values.
 func ParseConditions(exp string) (string, []Condition) {
+	exp = strings.ReplaceAll(exp, " ", "")
+
 	for i, char := range exp {
 		// Iterate through the string in search of an operator
 		if isOperator(char) {
-			// Split the package name and obtain the operators for the query
-			return exp[:i], splitConditions(exp[i:])
+			if i != 0 && isParentheses(rune(exp[i-1])) {
+				cond := exp[i:]
+				return exp[:i-1], splitConditions(cond[:len(cond)-1])
+			} else {
+				return exp[:i], splitConditions(exp[i:])
+			}
 		}
 	}
 
