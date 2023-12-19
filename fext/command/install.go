@@ -59,7 +59,7 @@ func (cmd *Install) DetectFlags() error {
 		switch f {
 		case "h", "help":
 			return ferror.HelpFlag
-		case "n", "no-dependencies":
+		case "n", "no-deps", "no-dependencies":
 			cmd.options.NoDependencies = true
 		case "s", "silent", "q", "quiet":
 			cmd.options.QuietMode = true
