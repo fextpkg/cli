@@ -29,14 +29,21 @@ func DefaultOptions() *Options {
 }
 
 type Installer struct {
-	local []*Query    // Installed packages
-	queue chan *Query // Prepared package queries
+	// Installed packages
+	local []*Query
+	// Prepared installation queries for the packages, including names,
+	// conditional operators, and versions
+	queue chan *Query
 
 	opt *Options
 }
 
-// supply separates extra dependencies from packages and adds all
-// dependent packages to the queue
+// Extracts extra dependencies from the packages, creates a new query object
+// with them, and adds it to the queue. If an extra package name is provided
+// but not locally installed, the query object is copied to the "extraNames"
+// attribute, and the original query is cleared of extra names.
+// It returns an error if the extra packages are not found or if there is any
+// other issue related to processing the package metadata.
 func (i *Installer) supply(queries []*Query) error {
 	var q *Query
 	for len(queries) > 0 {
@@ -47,115 +54,140 @@ func (i *Installer) supply(queries []*Query) error {
 		if err != nil {
 			return err
 		} else if len(extra) > 0 {
-			extraPackages, err := getPackageExtras(pkgName, extra)
+			extraDeps, err := getPackageExtras(pkgName, extra)
 			if err != nil {
-				if errors.Is(err, ferror.PackageDirectoryMissing) {
-					// when trying to install extra dependencies of a package
-					// that not installed, install the package and add this query
-					// to the end
-					// FIXME: separate name and conditions and requeue
-					deps, err := i.install(newRawQuery(pkgName))
-					if err != nil {
-						return err
-					}
-
-					queries = append(queries, extrasToQuery(deps)...)
-					queries = append(queries, q)
-					continue
+				if !errors.Is(err, ferror.PackageDirectoryMissing) {
+					return err
 				}
-				return err
+				// If a locally installed package is not found, but we are
+				// attempting to install its extra dependencies, an error would
+				// normally occur. To prevent this error and maintain backward
+				// compatibility, we employ a workaround by duplicating the
+				// query object without the extra names, and instead add the
+				// current query to the "extraNames" attribute. Once the
+				// installation is complete, we can retrieve and process the
+				// extra dependencies accordingly
+				q.extraNames = copyQuery(q)
 			}
-
-			// append extra packages
-			queries = append(queries, extraPackages...)
-		} else {
-			i.queue <- q
+			// Replacing the package name with a clean one,
+			// excluding any extra names
+			q.pkgName = pkgName
+			// Adding extra dependencies to the queue for further processing,
+			// as they may also have additional extra dependencies within them
+			queries = append(queries, extraDeps...)
 		}
+		i.queue <- q
 	}
 
 	return nil
 }
 
-// install installs a single package. Returns its dependencies or an error in
-// case of failure
+// Fetches the available versions for installation, selects the suitable
+// version based on the provided query attributes, downloads and unpacks the
+// package into the config.PythonLibPath.
+// It returns the package dependencies or an error if any occurs.
 func (i *Installer) install(query *Query) ([]pkg.Dependency, error) {
+	// Creating a new request
 	req := web.NewRequest(query.pkgName, query.conditions)
 
+	// Retrieving the necessary version based on the provided parameters
 	version, link, err := req.GetPackageData()
 	if err != nil {
 		return nil, err
 	}
 
-	// check if package already installed
+	// First, check if the package is installed locally
 	p, err := pkg.Load(query.pkgName)
 	if err == nil {
 		if version == p.Version {
+			// The required version of the package is already installed,
+			// so we don't need to download it again
 			return nil, ferror.PackageAlreadyInstalled
 		} else {
+			// The package is installed, but the version is not suitable.
+			// Remove the package and proceed with installing the required version
 			if err = p.Uninstall(); err != nil {
 				return nil, err
 			}
 		}
 	}
 
+	// Commencing package download
 	filePath, err := req.DownloadPackage(link)
 	if err != nil {
 		return nil, err
 	}
 
+	// Unpacking the installed file
 	if err = io.ExtractPackage(filePath); err != nil {
 		return nil, err
 	}
-	// remove downloaded file
+	// Remove downloaded file
 	if err = os.RemoveAll(filePath); err != nil {
 		return nil, err
 	}
 
-	// check the package installed correctly
+	// Finally, we ensure that the package is installed correctly
 	p, err = pkg.Load(query.pkgName)
 	if err != nil {
 		return nil, err
 	}
 
 	// Make a note that fext installed this package
-	err = io.CreateInstallerFile(p.GetMetaDirectoryPath())
-	if err != nil {
+	if err = io.CreateInstallerFile(p.GetMetaDirectoryPath()); err != nil {
 		return nil, err
 	}
 
 	return p.GetDependencies(), nil
 }
 
-// process pops the package from queue and installs it. Parses dependencies
-// of installed package and append them to queue. Prints the final result
+// Retrieves a package from the queue and starts its installation along
+// with its dependencies. It also installs extra dependencies if they were
+// provided. The output is displayed in stdout. If Options.QuietMode if set to
+// true, success messages will not be displayed.
 func (i *Installer) process() {
 	for len(i.queue) > 0 {
 		q, open := <-i.queue
 		if !open {
+			// Handling exceptional cases when we abruptly close the channel
 			break
 		}
 
 		dependencies, err := i.install(q)
 		if err != nil {
+			// Installation of the package failed. Displaying the error message
+			// regardless of the QuietMode setting
 			ui.PrintfMinus("%s (%v)\n", q.pkgName, err)
 			continue
 		}
 
 		if !i.opt.QuietMode {
+			// Displaying a success message only if the quiet mode is not enabled
 			ui.PrintlnPlus(q.pkgName)
 		}
 
 		if !i.opt.NoDependencies {
-			err = i.supply(extrasToQuery(dependencies))
+			// Installing the acquired package dependencies during installation
+			err = i.supply(extraDependenciesToQuery(dependencies))
 			if err != nil {
 				ui.PrintfError("%s deps (%s)\n", q.pkgName, err)
+			}
+		}
+
+		if q.extraNames != nil {
+			// Preparing extra dependencies for installation in this run due to
+			// their absence in the system during the previous attempt
+			err = i.supply([]*Query{q.extraNames})
+			if err != nil {
+				ui.PrintfError("%s extras (%s)\n", q.pkgName, err)
 			}
 		}
 	}
 }
 
-// InitializePackages converts the list of packages into a query list, parses
-// extra dependencies and adds the prepared packages to the queue
+// InitializePackages converts package names into a query queue and adds them
+// to the queue using the supply method.
+// It returns any error returned by the supply method.
 func (i *Installer) InitializePackages(packages []string) error {
 	var q []*Query
 	for _, pkgName := range packages {
@@ -188,14 +220,14 @@ func getPackageExtras(pkgName string, extraNames []string) ([]*Query, error) {
 	}
 
 	for _, extraName := range extraNames {
-		e, err := p.GetExtraDependencies(extraName)
+		extraDeps, err := p.GetExtraDependencies(extraName)
 		if err != nil {
 			return nil, err
-		} else if len(e) == 0 {
+		} else if len(extraDeps) == 0 {
 			return nil, &ferror.MissingExtra{Name: extraName}
 		}
 
-		for _, dep := range e {
+		for _, dep := range extraDeps {
 			queries = append(queries, newQuery(dep.PackageName, dep.Conditions))
 		}
 	}
