@@ -170,7 +170,7 @@ func (i *Installer) process() {
 			// Installing the acquired package dependencies during installation
 			err = i.supply(extraDependenciesToQuery(dependencies))
 			if err != nil {
-				ui.PrintfError("%s deps (%s)\n", q.pkgName, err)
+				ui.PrintfMinus("%s deps (%s)\n", q.pkgName, err)
 			}
 		}
 
@@ -179,7 +179,7 @@ func (i *Installer) process() {
 			// their absence in the system during the previous attempt
 			err = i.supply([]*Query{q.extraNames})
 			if err != nil {
-				ui.PrintfError("%s extras (%s)\n", q.pkgName, err)
+				ui.PrintfMinus("%s extras (%s)\n", q.pkgName, err)
 			}
 		}
 	}
