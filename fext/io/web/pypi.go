@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -53,7 +54,7 @@ func (req *PyPiRequest) DownloadPackage(link string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	tmpFile, err := os.Create(config.PythonLibPath + hashSum + ".tmp")
+	tmpFile, err := os.Create(filepath.Join(config.PythonLibPath, hashSum+".tmp"))
 	if err != nil {
 		return "", err
 	}
