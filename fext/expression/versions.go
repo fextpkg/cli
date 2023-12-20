@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	operatorList = []rune{'>', '<', '=', '!'}
+	operatorList = []rune{'>', '<', '=', '!', '~'}
 )
 
 type Condition struct {
