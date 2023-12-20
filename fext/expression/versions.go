@@ -210,6 +210,9 @@ func ParseConditions(exp string) (string, []Condition) {
 		// Iterate through the string in search of an operator
 		if isOperator(char) {
 			if i != 0 && isParentheses(rune(exp[i-1])) {
+				// The "bdist_wheel" generator adds parentheses to the expression,
+				// while other generators do not. Therefore, we can use a small
+				// "dirty" trick by removing the parentheses
 				cond := exp[i:]
 				return exp[:i-1], splitConditions(cond[:len(cond)-1])
 			} else {
@@ -219,4 +222,20 @@ func ParseConditions(exp string) (string, []Condition) {
 	}
 
 	return exp, nil
+}
+
+// CompareConditions checks the compliance of the version for the passed operators.
+// If all conditions are true, true will be returned, otherwise false. The error
+// is returned in case of an incorrect operator or version.
+func CompareConditions(version string, conditions []Condition) (bool, error) {
+	for _, cond := range conditions {
+		ok, err := CompareVersion(version, cond.Operator, cond.Value)
+		if !ok {
+			if err != nil {
+				return false, err
+			}
+			return false, nil
+		}
+	}
+	return true, nil
 }
