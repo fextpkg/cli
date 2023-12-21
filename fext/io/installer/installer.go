@@ -30,12 +30,45 @@ func DefaultOptions() *Options {
 
 type Installer struct {
 	// Installed packages
-	local []*Query
+	local map[string]*Query
 	// Prepared installation queries for the packages, including names,
 	// conditional operators, and versions
 	queue chan *Query
 
 	opt *Options
+}
+
+// updateLocal updates or adds conditional operators to maintain compatibility
+// with the other packages to be installed.
+func (i *Installer) updateLocal(newQuery *Query) {
+	query, exist := i.local[newQuery.pkgName]
+	if exist {
+		query.conditions = append(query.conditions, newQuery.conditions...)
+	} else {
+		i.local[newQuery.pkgName] = newQuery
+	}
+}
+
+// checkCompatibility checks the compatibility of the package version with
+// other packages that have been installed in the current session. It compares
+// the existing conditions with the ones provided.
+// It returns a boolean value indicating the compatibility or false if the
+// package was not found in local. If an error occurs during the comparison of
+// operators, it throws an error.
+func (i *Installer) checkCompatibility(pkgName, version string, cond []expression.Condition) (bool, error) {
+	query, exist := i.local[pkgName]
+	if exist {
+		return expression.CompareConditions(version, append(query.conditions, cond...))
+	}
+
+	return false, nil
+}
+
+// isInstalled checks if the package has been installed within the
+// current session.
+func (i *Installer) isInstalled(pkgName string) bool {
+	_, exist := i.local[pkgName]
+	return exist
 }
 
 // Extracts extra dependencies from the packages, creates a new query object
@@ -68,13 +101,20 @@ func (i *Installer) supply(queries []*Query) error {
 				// installation is complete, we can retrieve and process the
 				// extra dependencies accordingly
 				q.extraNames = copyQuery(q)
+			} else {
+				// Adding extra dependencies to the queue for further processing,
+				// as they may also have additional extra dependencies within them
+				queries = append(queries, extraDeps...)
+				if len(q.conditions) == 0 {
+					// If no installation conditions are specified,
+					// it indicates that the package is already installed.
+					// Hence, there is no need for additional installation
+					continue
+				}
 			}
 			// Replacing the package name with a clean one,
 			// excluding any extra names
 			q.pkgName = pkgName
-			// Adding extra dependencies to the queue for further processing,
-			// as they may also have additional extra dependencies within them
-			queries = append(queries, extraDeps...)
 		}
 		i.queue <- q
 	}
@@ -99,9 +139,18 @@ func (i *Installer) install(query *Query) ([]pkg.Dependency, error) {
 	// First, check if the package is installed locally
 	p, err := pkg.Load(query.pkgName)
 	if err == nil {
-		if version == p.Version {
-			// The required version of the package is already installed,
-			// so we don't need to download it again
+		compatible, err := i.checkCompatibility(query.pkgName, p.Version, query.conditions)
+		if err != nil {
+			// An error occurred while comparing operators
+			return nil, err
+		} else if compatible {
+			// The package is already installed and compatible with other
+			// packages that rely on it. Therefore, it is not necessary to
+			// reinstall it
+			return nil, ferror.PackageInLocalList
+		} else if version == p.Version && !i.isInstalled(query.pkgName) {
+			// This is the initial request for package installation.
+			// We need to provide a meaningful error to explain what occurred
 			return nil, ferror.PackageAlreadyInstalled
 		} else {
 			// The package is installed, but the version is not suitable.
@@ -154,10 +203,13 @@ func (i *Installer) process() {
 		}
 
 		dependencies, err := i.install(q)
+		i.updateLocal(q)
 		if err != nil {
-			// Installation of the package failed. Displaying the error message
-			// regardless of the QuietMode setting
-			ui.PrintfMinus("%s (%v)\n", q.pkgName, err)
+			if !errors.Is(err, ferror.PackageInLocalList) && !(errors.Is(err, ferror.PackageAlreadyInstalled) && q.isDependency) {
+				// Installation of the package failed. Displaying the error message
+				// regardless of the QuietMode setting
+				ui.PrintfMinus("%s (%v)\n", q.pkgName, err)
+			}
 			continue
 		}
 
@@ -205,6 +257,7 @@ func (i *Installer) Install() {
 
 func NewInstaller(opt *Options) *Installer {
 	return &Installer{
+		local: map[string]*Query{},
 		queue: make(chan *Query, 512),
 		opt:   opt,
 	}
@@ -228,7 +281,7 @@ func getPackageExtras(pkgName string, extraNames []string) ([]*Query, error) {
 		}
 
 		for _, dep := range extraDeps {
-			queries = append(queries, newQuery(dep.PackageName, dep.Conditions))
+			queries = append(queries, newQuery(dep.PackageName, dep.Conditions, true))
 		}
 	}
 

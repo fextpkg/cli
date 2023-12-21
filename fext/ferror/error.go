@@ -9,8 +9,16 @@ var (
 	// metadata was not found. The directory with the .dist-info extension is missing.
 	PackageDirectoryMissing = errors.New("package metadata directory not found")
 	// PackageAlreadyInstalled means that you are trying to install a package
-	// that is already installed.
+	// already installed in the system.
 	PackageAlreadyInstalled = errors.New("package already installed")
+	// PackageInLocalList means that the package installation attempt is being
+	// made for the second time. The previous suitable version has already been
+	// installed. The error arises during the comparison of the installed
+	// package version with the operators obtained from other dependent packages.
+	// To summarize, if this error occurs after comparing the list of operators,
+	// it means that reinstalling the package is not necessary. It is already
+	// present in the system and compatible with the other packages that use it.
+	PackageInLocalList = errors.New("package version compared and already installed")
 	// NoSuitableVersion means that no suitable version was found for the given query.
 	// This can be related to both the operators provided and the package's
 	// complete incompatibility with the current system (e.g., different Python

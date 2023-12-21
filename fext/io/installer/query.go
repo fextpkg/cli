@@ -14,7 +14,8 @@ type Query struct {
 	conditions []expression.Condition
 	// Duplicate struct in case a search for extra packages was performed
 	// without the required package already installed
-	extraNames *Query
+	extraNames   *Query
+	isDependency bool
 }
 
 // newRawQuery pre-parses conditional statements and creates a new query
@@ -27,10 +28,11 @@ func newRawQuery(s string) *Query {
 }
 
 // newQuery creates a new query with already known parameters
-func newQuery(pkgName string, conditions []expression.Condition) *Query {
+func newQuery(pkgName string, conditions []expression.Condition, isDependency bool) *Query {
 	return &Query{
-		pkgName:    pkgName,
-		conditions: conditions,
+		pkgName:      pkgName,
+		conditions:   conditions,
+		isDependency: isDependency,
 	}
 }
 
@@ -47,7 +49,7 @@ func copyQuery(q *Query) *Query {
 func extraDependenciesToQuery(extras []pkg.Dependency) []*Query {
 	var q []*Query
 	for _, extra := range extras {
-		q = append(q, newQuery(extra.PackageName, extra.Conditions))
+		q = append(q, newQuery(extra.PackageName, extra.Conditions, true))
 	}
 
 	return q
