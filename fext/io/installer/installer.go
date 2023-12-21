@@ -203,11 +203,17 @@ func (i *Installer) process() {
 		}
 
 		dependencies, err := i.install(q)
+		// Update conditions even if an error occurs, because there is hope for
+		// a subsequent installation request.
 		i.updateLocal(q)
 		if err != nil {
 			if !errors.Is(err, ferror.PackageInLocalList) && !(errors.Is(err, ferror.PackageAlreadyInstalled) && q.isDependency) {
-				// Installation of the package failed. Displaying the error message
-				// regardless of the QuietMode setting
+				// The condition is passed only if the package has not been
+				// installed before within the current session. Or if another
+				// error is received and the package is not a dependency.
+				// If the package is a dependency and is already installed,
+				// there is no point in displaying an error message. Otherwise,
+				// there is no need to conceal the error
 				ui.PrintfMinus("%s (%v)\n", q.pkgName, err)
 			}
 			continue

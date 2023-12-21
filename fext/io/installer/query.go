@@ -14,7 +14,8 @@ type Query struct {
 	conditions []expression.Condition
 	// Duplicate struct in case a search for extra packages was performed
 	// without the required package already installed
-	extraNames   *Query
+	extraNames *Query
+	// Mark package a dependency of another
 	isDependency bool
 }
 
