@@ -107,3 +107,18 @@ func Fatalf(text string, args ...interface{}) {
 	PrintfError(text, args...)
 	os.Exit(1)
 }
+
+// BoldString returns a string formatted to bold
+func BoldString(text string) string {
+	return colorString(Bold, text)
+}
+
+// RedString returns a string formatted to bold and colored to red
+func RedString(text string) string {
+	return colorString(Red+Bold, text)
+}
+
+// GreenString returns a string formatted to bold and colored to green
+func GreenString(text string) string {
+	return colorString(Green+Bold, text)
+}
