@@ -19,7 +19,7 @@ func ParseExtraNames(s string) (string, []string, error) {
 	if startQuote != -1 && endQuote != -1 {
 		originalName := s[:startQuote] + s[endQuote+1:] // pkgName and conditions
 		s = s[startQuote+1 : endQuote]                  // extra names
-		if strings.ContainsAny(s, "[]") {
+		if strings.ContainsAny(s, "[]") || s == "" {
 			return originalName, nil, ferror.SyntaxError
 		}
 

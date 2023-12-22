@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -53,7 +54,7 @@ func (req *PyPiRequest) DownloadPackage(link string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	tmpFile, err := os.Create(config.PythonLibPath + hashSum + ".tmp")
+	tmpFile, err := os.Create(filepath.Join(config.PythonLibPath, hashSum+".tmp"))
 	if err != nil {
 		return "", err
 	}
@@ -141,7 +142,7 @@ func (req *PyPiRequest) checkPackageInfo(node *html.Node) (string, string, error
 	}
 
 	// Check package version
-	ok, err = compareVersion(pkgTags.version, req.conditions)
+	ok, err = expression.CompareConditions(pkgTags.version, req.conditions)
 	if !ok {
 		return "", "", err
 	}
@@ -150,7 +151,7 @@ func (req *PyPiRequest) checkPackageInfo(node *html.Node) (string, string, error
 	_, conditions := expression.ParseConditions(versionRequirements)
 
 	// Check python version
-	ok, err = compareVersion(config.PythonVersion, conditions)
+	ok, err = expression.CompareConditions(config.PythonVersion, conditions)
 	if !ok {
 		return "", "", err
 	}
@@ -158,7 +159,7 @@ func (req *PyPiRequest) checkPackageInfo(node *html.Node) (string, string, error
 	return pkgTags.version, link, nil
 }
 
-// NewRequest creates a new package search query object on PyPiRequest with the
+// NewRequest creates a new package search query object on PyPi with the
 // specified conditions
 func NewRequest(pkgName string, cond []expression.Condition) *PyPiRequest {
 	return &PyPiRequest{
@@ -208,24 +209,9 @@ func parseAttrs(attrs []html.Attribute) (string, string) {
 	return link, versionRequirements
 }
 
-// compareVersion checks the compliance of the version for the passed operators.
-// If all conditions are true, true will be returned, otherwise false. The error
-// is returned in case of an incorrect operator or version.
-func compareVersion(version string, conditions []expression.Condition) (bool, error) {
-	for _, cond := range conditions {
-		ok, err := expression.CompareVersion(version, cond.Op, cond.Value)
-		if !ok {
-			if err != nil {
-				return false, err
-			}
-			return false, nil
-		}
-	}
-	return true, nil
-}
-
 // checkPythonCompatibility accepts python-tag of a package (PEP 425) and checks
-// compatibility with installed python
+// compatibility with installed python. Currently, only "py" and "cp" tags are
+// implemented. When any other tag is passed, false will be returned.
 func checkPythonCompatibility(pythonTag string) bool {
 	// https://packaging.python.org/en/latest/specifications/platform-compatibility-tags/#python-tag
 
@@ -240,8 +226,8 @@ func checkPythonCompatibility(pythonTag string) bool {
 				return true
 			}
 		} else if code == "cp" {
-			// Remove the extra characters and compare only the minor version
 			cpythonVersion := config.GetPythonMinorVersion()
+			// Remove the extra characters and compare only the minor version
 			tagVersion := version[3:]
 
 			if tagVersion == "" || tagVersion == cpythonVersion {
