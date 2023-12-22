@@ -225,6 +225,16 @@ func (p *Package) GetExtraDependencies(extraName string) ([]Dependency, error) {
 	return extraPackages, nil
 }
 
+func (p *Package) HasExtraName(name string) bool {
+	for _, depName := range p.Extras {
+		if depName == name {
+			return true
+		}
+	}
+
+	return false
+}
+
 // formatName formats the directory name to a single view
 func formatName(dirName string) string {
 	return strings.ToLower(strings.ReplaceAll(dirName, "-", "_"))

@@ -282,7 +282,7 @@ func getPackageExtras(pkgName string, extraNames []string) ([]*Query, error) {
 		extraDeps, err := p.GetExtraDependencies(extraName)
 		if err != nil {
 			return nil, err
-		} else if len(extraDeps) == 0 {
+		} else if !p.HasExtraName(extraName) {
 			return nil, &ferror.MissingExtra{Name: extraName}
 		}
 
