@@ -107,3 +107,15 @@ func Fatalf(text string, args ...interface{}) {
 	PrintfError(text, args...)
 	os.Exit(1)
 }
+
+func BoldString(text string) string {
+	return colorString(Bold, text)
+}
+
+func RedString(text string) string {
+	return colorString(Red+Bold, text)
+}
+
+func GreenString(text string) string {
+	return colorString(Green+Bold, text)
+}
