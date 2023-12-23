@@ -2,11 +2,11 @@ package command
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/fextpkg/cli/fext/config"
 	"github.com/fextpkg/cli/fext/ferror"
+	"github.com/fextpkg/cli/fext/io"
 	"github.com/fextpkg/cli/fext/pkg"
 	"github.com/fextpkg/cli/fext/ui"
 )
@@ -84,27 +84,6 @@ func (cmd *Freeze) printStylePIP() {
 	}
 }
 
-// scanMetaDirectories goes through the directory with python modules and
-// packages, selects the meta-directories and appends them to the metaDirectories
-// attribute. Returns an error if the folder could not be read.
-func (cmd *Freeze) scanMetaDirectories() error {
-	files, err := os.ReadDir(config.PythonLibPath)
-	if err != nil {
-		return err
-	}
-
-	// Go through the files and select meta directories (wheel has the "dist-info"
-	// suffix)
-	for _, f := range files {
-		dirName := f.Name()
-		if f.IsDir() && strings.HasSuffix(dirName, "dist-info") {
-			cmd.metaDirectories = append(cmd.metaDirectories, dirName)
-		}
-	}
-
-	return nil
-}
-
 // DetectFlags analyzes the passed flags and fills in the variables associated
 // with them.
 //
@@ -140,7 +119,8 @@ func (cmd *Freeze) Execute() {
 		ui.Fatal("Unable to select print mode:", err.Error())
 	}
 
-	if err = cmd.scanMetaDirectories(); err != nil {
+	cmd.metaDirectories, err = io.GetMetaDirectories()
+	if err != nil {
 		ui.Fatal("Unable to scan meta directories:", err.Error())
 	}
 

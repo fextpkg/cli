@@ -73,3 +73,26 @@ func CreateInstallerFile(path string) error {
 
 	return nil
 }
+
+// GetMetaDirectories goes through the directory with python modules and
+// packages, selects the meta-directories and returns them.
+// Returns an error if the folder could not be read.
+func GetMetaDirectories() ([]string, error) {
+	var directories []string
+
+	files, err := os.ReadDir(config.PythonLibPath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Go through the files and select meta directories
+	// (wheel has the "dist-info" suffix)
+	for _, f := range files {
+		dirName := f.Name()
+		if f.IsDir() && strings.HasSuffix(dirName, "dist-info") {
+			directories = append(directories, dirName)
+		}
+	}
+
+	return directories, nil
+}
