@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	operatorList = []rune{'>', '<', '=', '!', '~'}
+	operators = []rune{'>', '<', '=', '!', '~'}
 )
 
 type Condition struct {
@@ -128,6 +128,21 @@ func compareVersion(a, b string) (int, error) {
 	return 0, nil
 }
 
+// compareMajorVersion compares major versions (first parts) and returns true
+// if they are equal, otherwise it returns false.
+func compareMajorVersion(v1, v2 string) (bool, error) {
+	v1major, _, err := parseVersion(v1)
+	if err != nil {
+		return false, err
+	}
+	v2major, _, err := parseVersion(v2)
+	if err != nil {
+		return false, err
+	}
+
+	return v1major[0] == v2major[0], nil
+}
+
 // CompareVersion works by means of comparing each part of the version. The
 // version is divided into semantic parts (major, minor, patch, pre) and
 // converted into numbers that are compared one after another. For example,
@@ -150,7 +165,9 @@ func CompareVersion(v1, op, v2 string) (bool, error) {
 		return true, nil
 	} else if res == 0 && (op == "==" || op == ">=" || op == "<=") {
 		return true, nil
-	} else if !strings.ContainsAny(op, "><=!") {
+	} else if res >= 0 && op == "~=" {
+		return compareMajorVersion(v1, v2)
+	} else if !strings.ContainsAny(op, "=><") {
 		return false, &ferror.UnexpectedOperator{Operator: op}
 	}
 
@@ -159,7 +176,7 @@ func CompareVersion(v1, op, v2 string) (bool, error) {
 
 // isOperator checks if a rune corresponds to a specific operator symbol.
 func isOperator(char rune) bool {
-	for _, op := range operatorList {
+	for _, op := range operators {
 		if op == char {
 			return true
 		}
