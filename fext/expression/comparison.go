@@ -67,7 +67,7 @@ func parseExpressionWithOperators(s string) ([]expression, error) {
 	length := len(delimitedString) - 1
 
 	for i, sequence := range delimitedString {
-		if strings.ContainsAny(sequence, "><=!") {
+		if strings.ContainsAny(sequence, "=><") {
 			// Verify that there are elements on both sides
 			if i >= length || i == 0 {
 				// TODO: more readable
