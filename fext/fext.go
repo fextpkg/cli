@@ -33,6 +33,8 @@ func getCommandInterface() (ICommand, func(), error) {
 		return command.InitFreeze(), ui.PrintHelpFreeze, nil
 	case "show", "info":
 		return command.InitShowPackageInfo(args), nil, nil
+	case "check":
+		return command.InitCheckPackageHealth(), nil, nil
 	case "debug":
 		// The "debug" command doesn't accept any flags. Respectively, the "DetectFlags"
 		// method will never return a "ferror.HelpFlag" error, which means that helpFunc
