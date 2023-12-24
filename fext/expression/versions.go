@@ -80,7 +80,6 @@ func parsePreVersion(s string) (int, int, error) {
 		// First, we search for the index of the letter
 		if !unicode.IsDigit(v) {
 			// Next, we convert everything before it into a number
-			//fmt.Println(">>", s, s[:i])
 			patchValue, err = strconv.Atoi(s[:i])
 			// TODO: replace this hack with a proper check for alpha, beta,
 			// or release candidate
@@ -124,6 +123,9 @@ func compareVersion(a, b string) (int, error) {
 	for i := 0; i < 3; i++ {
 		d1, d2 := v1[i], v2[i]
 		if d1 == -1 || d2 == -1 {
+			// -1 indicates that an asterisk (*) was set in the part value.
+			// We can't compare based on this value as it is designed to cover
+			// all parts of the version
 			continue
 		} else if d1 > d2 {
 			return 1, nil
@@ -134,6 +136,8 @@ func compareVersion(a, b string) (int, error) {
 
 	// If the above comparison fails, compare the pre-version
 	if v1pre&v2pre != 0 {
+		// Compare pre-parts only if they are specified. Otherwise, it doesn't
+		// make sense in terms of user experience and optimization
 		if v1pre > v2pre {
 			return 1, nil
 		} else if v2pre > v1pre {
