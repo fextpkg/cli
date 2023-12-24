@@ -34,7 +34,7 @@ func checkCompatibility(platformTag string) (bool, error) {
 // checks the glibc version to ensure that it is >= to the current version.
 func parseAndCompare(platform string) (bool, error) {
 	data := strings.SplitN(platform, "_", 4) // ["manylinux", glibc_major, glibc_minor, arch]
-	if config.PythonArch != data[3] {
+	if config.MarkerArch != data[3] {
 		return false, nil
 	}
 

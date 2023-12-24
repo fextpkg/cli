@@ -94,6 +94,11 @@ func (p *Package) parseMetaData() error {
 		// description follows, but we don't need it
 		if s != "" {
 			field := strings.SplitN(s, ": ", 2)
+			if len(field) != 2 {
+				// Handle extreme situations when file has been poorly
+				// generated
+				continue
+			}
 			key, value := field[0], field[1]
 
 			switch key {
@@ -189,15 +194,17 @@ func (p *Package) GetSize() (int64, error) {
 	files = append(files, p.metaDir, p.getDataDirectory())
 	var size int64
 	for _, fileName := range files {
-		_ = filepath.Walk(getAbsolutePath(fileName), func(_ string, info os.FileInfo, _ error) error {
-			// Ignore the error as the data directory may not exist
-			if info != nil && !info.IsDir() {
-				// The weight of folders is always incorrect,
-				// so calculate the weight based on all the files instead
-				size += info.Size()
-			}
-			return nil
-		})
+		_ = filepath.Walk(
+			getAbsolutePath(fileName), func(_ string, info os.FileInfo, _ error) error {
+				// Ignore the error as the data directory may not exist
+				if info != nil && !info.IsDir() {
+					// The weight of folders is always incorrect,
+					// so calculate the weight based on all the files instead
+					size += info.Size()
+				}
+				return nil
+			},
+		)
 	}
 
 	return size, nil
@@ -208,18 +215,30 @@ func (p *Package) GetMetaDirectoryPath() string {
 	return getAbsolutePath(p.metaDir)
 }
 
-// GetDependencies retrieves package dependencies that are ready for comparison.
-func (p *Package) GetDependencies() []Dependency {
+// GetDependencies retrieves compatible package dependencies that are ready for
+// comparison.
+// Returns an error if there are any issues during metadata parsing.
+func (p *Package) GetDependencies() ([]Dependency, error) {
 	var packages []Dependency
 
 	for _, dep := range p.Dependencies {
 		if !dep.isExtra {
+			// Markers may not always be present in dependency line
+			if dep.markers != "" {
+				compatible, err := expression.CompareMarkers(dep.markers)
+				if err != nil {
+					return nil, err
+				} else if !compatible {
+					continue
+				}
+			}
+
 			dep.PackageName, dep.Conditions = expression.ParseConditions(dep.rawValue)
 			packages = append(packages, dep)
 		}
 	}
 
-	return packages
+	return packages, nil
 }
 
 // GetExtraDependencies retrieves compatible extra dependencies and returns an

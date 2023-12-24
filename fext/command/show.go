@@ -55,12 +55,17 @@ func prettifyData(pkgName string) (string, error) {
 		return "", err
 	}
 
+	dependencies, err := p.GetDependencies()
+	if err != nil {
+		return "", err
+	}
+
 	return fmt.Sprintf(
 		"Name: %s\nVersion: %s\nSize: %s MB\nDependencies: %s\nExtra Dependencies: %s",
 		ui.BoldString(p.Name),
 		ui.BoldString(p.Version),
 		ui.BoldString(strconv.FormatFloat(float64(size/1024)/1024, 'f', 2, 32)),
-		prettifyDependencies(p.GetDependencies()),
+		prettifyDependencies(dependencies),
 		prettifyExtraDependencies(p),
 	), nil
 }

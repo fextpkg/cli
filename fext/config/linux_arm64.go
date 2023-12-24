@@ -2,4 +2,4 @@
 
 package config
 
-const PythonArch = "aarch64"
+const MarkerArch = "arm64" // platform_machine (platform.machine())

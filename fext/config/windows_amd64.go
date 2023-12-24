@@ -2,4 +2,6 @@
 
 package config
 
-const PlatformTag = "win_amd64"
+const (
+	PlatformTag = "win_amd64"
+)

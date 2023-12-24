@@ -187,7 +187,7 @@ func (i *Installer) install(query *Query) ([]pkg.Dependency, error) {
 		return nil, err
 	}
 
-	return p.GetDependencies(), nil
+	return p.GetDependencies()
 }
 
 // Retrieves a package from the queue and starts its installation along

@@ -11,8 +11,20 @@ func compareMarkerPythonVersion(exp expression) (bool, error) {
 	return CompareVersion(config.PythonVersion, exp.op, exp.v2)
 }
 
-func compareMarkerSysPlatform(exp expression) (bool, error) {
-	return CompareString(config.SysPlatform, exp.op, exp.v2)
+func compareMarkerPlatform(exp expression) (bool, error) {
+	return CompareString(config.MarkerPlatform, exp.op, exp.v2)
+}
+
+func compareMarkerArch(exp expression) (bool, error) {
+	return CompareString(config.MarkerArch, exp.op, exp.v2)
+}
+
+func compareMarkerPythonImpl(exp expression) (bool, error) {
+	return CompareString(config.MarkerPythonImpl, exp.op, exp.v2)
+}
+
+func compareMarkerPlatformName(exp expression) (bool, error) {
+	return CompareString(config.MarkerPlatformName, exp.op, exp.v2)
 }
 
 func compareMarkerExtra(_ expression) (bool, error) {
@@ -28,7 +40,13 @@ func compareMarker(exp expression) (bool, error) {
 	case "python_version", "python_full_version":
 		compareFunc = compareMarkerPythonVersion
 	case "sys_platform":
-		compareFunc = compareMarkerSysPlatform
+		compareFunc = compareMarkerPlatform
+	case "platform_machine":
+		compareFunc = compareMarkerArch
+	case "platform_system":
+		compareFunc = compareMarkerPlatformName
+	case "platform_python_implementation":
+		compareFunc = compareMarkerPythonImpl
 	case "extra":
 		// As we handle the discovery and validation of extra in the "MatchExtraMarker"
 		// function, here we can utilize a placeholder that consistently returns true
