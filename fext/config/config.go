@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	Version      = "0.4.0"
+	Version      = "0.4.1"
 	DefaultChmod = 0755
 
 	MarkerPythonImpl = "CPython" // platform_python_implementation (platform.python_implementation())
