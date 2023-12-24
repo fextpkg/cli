@@ -6,12 +6,14 @@ import (
 
 // PrintHelp prints main help info
 func PrintHelp() {
-	fmt.Println("Usage:\n\tfext <command> [args]",
+	fmt.Println("Usage:\n\tfext [options] <command> [args]",
 		"\n\nAvailable commands:\n",
-		"\t(i)nstall [options] <package(s)>   - install a package(s)\n",
-		"\t(u)ninstall [options] <package(s)> - uninstall a package(s)\n",
-		"\tfreeze - show list of installed packages\n",
-		"\tdebug  - show debug info",
+		"\t(i)nstall <package(s)>   - install a package(s)\n",
+		"\t(u)ninstall <package(s)> - uninstall a package(s)\n",
+		"\t(f)reeze                 - show list of installed packages\n",
+		"\tshow <package>           - show general info about package\n",
+		"\tcheck                    - verify correct installation of packages in the system\n",
+		"\tdebug                    - show debug info",
 		"\n\nFor additional help you can write:\n\tfext <command> -h")
 }
 
