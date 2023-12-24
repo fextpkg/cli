@@ -20,11 +20,16 @@ type Condition struct {
 // parseVersion parses and splits the version into four semantic parts:
 // major, minor, patch, and pre. It returns an array of the first three parts
 // and separately returns the pre-version.
-// If the pre-version is not provided, it will return 0. If any part is missing,
-// it will be replaced with 0. Therefore, if an empty string is passed,
-// an array of zeros will be returned. It throws an error if there is a syntax
-// violation (error during the conversion to a number).
+//
+// If the pre-version is not provided, it will return 0.
+// If any part is missing, it will be replaced with 0. Therefore, if an empty
+// string is passed, an array of zeros will be returned.
+// If an asterisk (*) is passed instead of a number, it will be replaced with -1,
+// as it is considered a symbol for ignoring the number.
+//
+// It throws an error if there is a syntax violation (error during the conversion to a number).
 func parseVersion(s string) ([3]int, int, error) {
+	// TODO: maybe return triple -1 if empty string was passed
 	var output [3]int
 	var pre int
 
@@ -35,18 +40,26 @@ func parseVersion(s string) ([3]int, int, error) {
 		// Iterate only over existing elements and replace the rest with zeros
 		if i < partsCount {
 			value := parts[i]
-			intValue, err := strconv.Atoi(value)
-			if err != nil {
-				// We receive an error if the string contains letters.
-				// This means that the loop has reached the patch version and
-				// it contains the pre-version
-				intValue, pre, err = parsePreVersion(value)
+			if value != "*" {
+				intValue, err := strconv.Atoi(value)
 				if err != nil {
-					return output, 0, err
+					// We receive an error if the string contains letters.
+					// This means that the loop has reached the patch version and
+					// it contains the pre-version
+					intValue, pre, err = parsePreVersion(value)
+					if err != nil {
+						return output, 0, err
+					}
 				}
+				output[i] = intValue
+			} else {
+				// The asterisk (*) means that any version is allowed. Mark
+				// this as -1 so that we can skip the check for this part in
+				// the future
+				output[i] = -1
 			}
-			output[i] = intValue
 		} else {
+			// The version part was not provided, replace it with 0
 			output[i] = 0
 		}
 	}
@@ -108,15 +121,23 @@ func compareVersion(a, b string) (int, error) {
 
 	// First, we compare the first three semantic parts
 	for i := 0; i < 3; i++ {
-		if v1[i] > v2[i] {
+		d1, d2 := v1[i], v2[i]
+		if d1 == -1 || d2 == -1 {
+			// -1 indicates that an asterisk (*) was set in the part value.
+			// We can't compare based on this value as it is designed to cover
+			// all parts of the version
+			continue
+		} else if d1 > d2 {
 			return 1, nil
-		} else if v2[i] > v1[i] {
+		} else if d2 > d1 {
 			return -1, nil
 		}
 	}
 
 	// If the above comparison fails, compare the pre-version
 	if v1pre&v2pre != 0 {
+		// Compare pre-parts only if they are specified. Otherwise, it doesn't
+		// make sense in terms of user experience and optimization
 		if v1pre > v2pre {
 			return 1, nil
 		} else if v2pre > v1pre {

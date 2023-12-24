@@ -4,4 +4,4 @@ package config
 
 import "runtime"
 
-const PythonArch = runtime.GOARCH
+const MarkerArch = runtime.GOARCH // platform_machine (platform.machine())

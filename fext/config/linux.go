@@ -10,8 +10,10 @@ import (
 )
 
 const (
-	SysPlatform = "linux" // PEP 508 marker
-	pythonExec  = "python3"
+	MarkerPlatform     = "linux" // sys_platform (sys.platform)
+	MarkerPlatformName = "Linux" // platform_system (platform.system())
+
+	pythonExec = "python3"
 )
 
 var GLibCVersion = C.GoString(C.gnu_get_libc_version())
@@ -21,7 +23,7 @@ func getPythonLib() string {
 	if err != nil {
 		panic(err)
 	}
-	// Python directory contains only minor version
+	// Python directory contains only the minor version
 	return fmt.Sprintf("%s/.local/lib/python3.%s/site-packages/", homePath, GetPythonMinorVersion())
 }
 

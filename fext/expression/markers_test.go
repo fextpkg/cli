@@ -13,7 +13,7 @@ var (
 	markerPythonVersionTrue  = "python_version >= '3." + config.GetPythonMinorVersion() + "'"
 	markerPythonVersionFalse = "python_version == '3.0'"
 
-	markerSysPlatformTrue  = "sys_platform == '" + config.SysPlatform + "'"
+	markerSysPlatformTrue  = "sys_platform == '" + config.MarkerPlatform + "'"
 	markerSysPlatformFalse = "sys_platform == 'some_unknown'"
 
 	// We can specify anything to the extra field as we don't require this marker.
@@ -22,7 +22,7 @@ var (
 
 	markerUnknown = "unknown == 'value'"
 
-	markerSysPlatformUnknownOperator = "sys_platform ~= '" + config.SysPlatform + "'"
+	markerSysPlatformUnknownOperator = "sys_platform ~= '" + config.MarkerPlatform + "'"
 
 	trueMarkers = []string{
 		markerPythonVersionTrue,

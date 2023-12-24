@@ -2,4 +2,4 @@
 
 package config
 
-const PythonArch = "x86_64"
+const MarkerArch = "x86_64" // platform_machine (platform.machine())

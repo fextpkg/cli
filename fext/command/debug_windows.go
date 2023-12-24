@@ -26,7 +26,7 @@ func (cmd *Debug) Execute() {
 		ui.BoldString(config.Version),
 		ui.BoldString(config.PythonLibPath),
 		ui.BoldString(config.PythonVersion),
-		ui.BoldString(config.SysPlatform),
+		ui.BoldString(config.MarkerPlatform),
 		ui.BoldString(config.PlatformTag),
 		ui.BoldString(os.FileMode(config.DefaultChmod).String()),
 		ui.BoldString(runtime.GOOS),

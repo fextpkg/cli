@@ -24,7 +24,10 @@ func InitCheckPackageHealth() *CheckPackageHealth {
 // package was failed to load.
 func (cmd *CheckPackageHealth) scanMissingDependencies(p *pkg.Package) ([]string, error) {
 	var missingDependencies []string
-	packages := p.GetDependencies()
+	packages, err := p.GetDependencies()
+	if err != nil {
+		return nil, err
+	}
 
 	for len(packages) > 0 {
 		dep := packages[0]
@@ -63,7 +66,12 @@ func (cmd *CheckPackageHealth) scanMissingDependencies(p *pkg.Package) ([]string
 func (cmd *CheckPackageHealth) scanMismatchingDependencies(p *pkg.Package) ([]string, error) {
 	var deps []string
 
-	for _, dep := range p.GetDependencies() {
+	dependencies, err := p.GetDependencies()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, dep := range dependencies {
 		p, err := pkg.Load(dep.PackageName)
 		if err != nil {
 			// Skipping the package, as method is not responsible for missing

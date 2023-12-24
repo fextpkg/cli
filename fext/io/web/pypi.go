@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -153,6 +154,16 @@ func (req *PyPiRequest) getPackageInfo(node *html.Node) (string, string, error) 
 	// Check package version
 	ok, err = expression.CompareConditions(pkgTags.version, req.conditions)
 	if !ok {
+		if errors.Is(err, strconv.ErrSyntax) {
+			// Due to the very strange description and lack of compatibility
+			// with semantic versioning in PEP 440, we don't have an elegant
+			// and efficient algorithm for handling post and dev releases.
+			// Therefore, if we encounter an error, it is most likely related
+			// to parsing these two parts. Since it is undesirable to interrupt
+			// the package downloading, we ignore this case. These two
+			// additional parts of the version are not highly significant.
+			return "", "", nil
+		}
 		return "", "", err
 	}
 
@@ -264,8 +275,7 @@ func parseAttrs(attrs []html.Attribute) (string, string) {
 		case "href":
 			link = attr.Val
 		case "data-requires-python":
-			// remove this parts, because it's works fine without it
-			versionRequirements = strings.ReplaceAll(attr.Val, ".*", "")
+			versionRequirements = strings.ReplaceAll(attr.Val, ",", "")
 		}
 	}
 	return link, versionRequirements

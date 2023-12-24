@@ -8,8 +8,11 @@ import (
 )
 
 const (
-	SysPlatform = "win32" // PEP 508 marker
-	pythonExec  = "python"
+	MarkerPlatform     = "win32"   // sys_platform (sys.platform)
+	MarkerPlatformName = "Windows" // platform_system (platform.system())
+	MarkerArch         = "AMD64"   // platform_machine (platform.machine())
+
+	pythonExec = "python"
 )
 
 func getPythonLib() string {
@@ -17,7 +20,7 @@ func getPythonLib() string {
 	if err != nil {
 		panic(err)
 	}
-	// Python directory contains only minor version
+	// Python directory contains only the minor version
 	return fmt.Sprintf("%s\\Python\\Python3%s\\site-packages\\", pathToAppData, GetPythonMinorVersion())
 }
 
