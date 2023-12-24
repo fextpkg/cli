@@ -10,23 +10,37 @@ import (
 
 	"golang.org/x/net/html"
 
-	"github.com/fextpkg/cli/fext/ferror"
-
 	"github.com/fextpkg/cli/fext/config"
 	"github.com/fextpkg/cli/fext/expression"
+	"github.com/fextpkg/cli/fext/ferror"
 )
 
 type PyPiRequest struct {
-	pkgName    string
+	// Input package name
+	pkgName string
+	// Input conditions
 	conditions []expression.Condition
 }
 
+// packageTags stores package compatibility tags
+// (https://peps.python.org/pep-0425/)
 type packageTags struct {
-	name        string
-	version     string
-	buildTag    string
-	pyTag       string
-	abiTag      string
+	// Package name
+	name string
+	// Package version
+	version string
+	// Optional tag that is rarely used
+	buildTag string
+	// The Python tag indicates the implementation and version required by a
+	// distribution
+	pyTag string
+	// The ABI tag indicates which Python ABI is required by any included
+	// extension modules. For implementation-specific ABIs, the implementation
+	// is abbreviated in the same way as the Python Tag, e.g., cp33d would be
+	// the CPython 3.3 ABI with debugging
+	abiTag string
+	// The platform tag is simply distutils.util.get_platform() with all
+	// hyphens "-" and periods ".", replaced with underscore "_"
 	platformTag string
 }
 
@@ -43,8 +57,8 @@ func (req *PyPiRequest) GetPackageData() (string, string, error) {
 	return req.selectSuitableVersion(doc)
 }
 
-// DownloadPackage downloads the package from PyPi repository. Returns path to
-// downloaded package
+// DownloadPackage downloads the package file from PyPi repository.
+// Returns a path to downloaded file
 func (req *PyPiRequest) DownloadPackage(link string) (string, error) {
 	hashSum := strings.Split(link, "sha256=")[1]
 
@@ -67,7 +81,7 @@ func (req *PyPiRequest) DownloadPackage(link string) (string, error) {
 	return tmpFile.Name(), nil
 }
 
-// getPackageList gets a web page with package list
+// getPackageList gets a web page with the package list
 func (req *PyPiRequest) getPackageList() (*html.Node, error) {
 	resp, err := http.Get("https://pypi.org/simple/" + req.pkgName + "/")
 	if err != nil {
@@ -86,19 +100,20 @@ func (req *PyPiRequest) getPackageList() (*html.Node, error) {
 	return doc, nil
 }
 
-// Parse document and select correct version. Returns version, download link
+// Parse document and select a correct version. Returns version, download link
 func (req *PyPiRequest) selectSuitableVersion(doc *html.Node) (string, string, error) {
 	// html => body (on pypi)
 	startNode := doc.FirstChild.NextSibling.FirstChild.NextSibling.NextSibling.LastChild
 
-	// check latest versions first
+	// Check the latest versions first
 	for node := startNode; node != nil; node = node.PrevSibling {
-		// Elements with package data are stored in "a" attribute. Exclude all other attrs like "br" and others.
+		// Elements with package data are stored in the "a" tag.
+		// Exclude all other tags, like "br" and others.
 		if node.Data != "a" {
 			continue
 		}
 
-		version, link, err := req.checkPackageInfo(node)
+		version, link, err := req.getPackageInfo(node)
 		if err != nil {
 			// Critical error, it is impossible to continue the search
 			return "", "", err
@@ -114,12 +129,12 @@ func (req *PyPiRequest) selectSuitableVersion(doc *html.Node) (string, string, e
 	return "", "", ferror.NoSuitableVersion
 }
 
-// checkPackageInfo parses the node and checks all the data from it for
+// getPackageInfo parses the node and checks all the data from it for
 // compliance with the desired version. If successful, it returns the version and
-// download link. If the version could not be found, empty strings will be
+// downloads link. If the version could not be found, empty strings will be
 // returned without an error. If an error occurred, it will be returned with
 // empty strings.
-func (req *PyPiRequest) checkPackageInfo(node *html.Node) (string, string, error) {
+func (req *PyPiRequest) getPackageInfo(node *html.Node) (string, string, error) {
 	fullData := node.FirstChild.Data
 
 	// Select only wheel package
@@ -129,16 +144,10 @@ func (req *PyPiRequest) checkPackageInfo(node *html.Node) (string, string, error
 
 	pkgTags := parsePackageTags(fullData)
 
-	// Check platform-tag
-	ok, err := checkPlatformCompatibility(pkgTags.platformTag)
+	// Check Python compatibility tags
+	ok, err := pkgTags.CheckCompatibility()
 	if !ok {
 		return "", "", err
-	}
-
-	// Check python tag
-	ok = checkPythonCompatibility(pkgTags.pyTag)
-	if !ok {
-		return "", "", nil
 	}
 
 	// Check package version
@@ -150,13 +159,64 @@ func (req *PyPiRequest) checkPackageInfo(node *html.Node) (string, string, error
 	link, versionRequirements := parseAttrs(node.Attr)
 	_, conditions := expression.ParseConditions(versionRequirements)
 
-	// Check python version
+	// Check the Python version
 	ok, err = expression.CompareConditions(config.PythonVersion, conditions)
 	if !ok {
 		return "", "", err
 	}
 
 	return pkgTags.version, link, nil
+}
+
+// checkPythonCompatibility accepts python-tag of a package (PEP 425) and checks
+// compatibility with installed python. Currently, only "py" and "cp" tags are
+// implemented. When any other tag is passed, false will be returned.
+func (tag *packageTags) checkPythonCompatibility() bool {
+	// https://packaging.python.org/en/latest/specifications/platform-compatibility-tags/#python-tag
+
+	// There can be several versions and they alternate through a point
+	for _, version := range strings.Split(tag.pyTag, ".") {
+		code := version[:2]
+
+		if code == "py" {
+			// Since there is support for versions 2 and 3 at once, we only check for the
+			// presence of the number 3
+			if version[2:] == "3" {
+				return true
+			}
+		} else if code == "cp" {
+			cpythonVersion := config.GetPythonMinorVersion()
+			// Remove the extra characters and compare only the minor version
+			tagVersion := version[3:]
+
+			if tagVersion == "" || tagVersion == cpythonVersion {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+// checkPlatformCompatibility accepts platform-tag of a package (PEP 425) and checks
+// them for compatibility with the current platform
+func (tag *packageTags) checkPlatformCompatibility() (bool, error) {
+	// https://packaging.python.org/en/latest/specifications/platform-compatibility-tags/#platform-tag
+	if tag.platformTag == "any" {
+		return true, nil
+	}
+	return checkCompatibility(tag.platformTag)
+}
+
+// CheckCompatibility calls other tag checking methods and returns the final
+// result.
+func (tag *packageTags) CheckCompatibility() (bool, error) {
+	ok, err := tag.checkPlatformCompatibility()
+	if err != nil || !ok {
+		return false, err
+	}
+
+	return tag.checkPythonCompatibility(), nil
 }
 
 // NewRequest creates a new package search query object on PyPi with the
@@ -168,6 +228,8 @@ func NewRequest(pkgName string, cond []expression.Condition) *PyPiRequest {
 	}
 }
 
+// parsePackageTags separates all package tags and creates a new structure
+// packageTags with them.
 func parsePackageTags(s string) *packageTags {
 	var buildTag string
 	var buildTagIndex int
@@ -193,7 +255,7 @@ func parsePackageTags(s string) *packageTags {
 	return pkgTags
 }
 
-// parseAttrs parses the HTML element attributes and returns download link,
+// parseAttrs parses the HTML element attributes and return download link,
 // python requirement versions. Example: ("https://...", ">=3.7")
 func parseAttrs(attrs []html.Attribute) (string, string) {
 	var link, versionRequirements string
@@ -207,44 +269,4 @@ func parseAttrs(attrs []html.Attribute) (string, string) {
 		}
 	}
 	return link, versionRequirements
-}
-
-// checkPythonCompatibility accepts python-tag of a package (PEP 425) and checks
-// compatibility with installed python. Currently, only "py" and "cp" tags are
-// implemented. When any other tag is passed, false will be returned.
-func checkPythonCompatibility(pythonTag string) bool {
-	// https://packaging.python.org/en/latest/specifications/platform-compatibility-tags/#python-tag
-
-	// There can be several versions and they alternate through a point
-	for _, version := range strings.Split(pythonTag, ".") {
-		code := version[:2]
-
-		if code == "py" {
-			// Since there is support for versions 2 and 3 at once, we only check for the
-			// presence of the number 3
-			if version[2:] == "3" {
-				return true
-			}
-		} else if code == "cp" {
-			cpythonVersion := config.GetPythonMinorVersion()
-			// Remove the extra characters and compare only the minor version
-			tagVersion := version[3:]
-
-			if tagVersion == "" || tagVersion == cpythonVersion {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
-// checkPlatformCompatibility accepts platform-tag of a package (PEP 425) and checks
-// them for compatibility with the current platform
-func checkPlatformCompatibility(platformTag string) (bool, error) {
-	// https://packaging.python.org/en/latest/specifications/platform-compatibility-tags/#platform-tag
-	if platformTag == "any" {
-		return true, nil
-	}
-	return checkCompatibility(platformTag)
 }

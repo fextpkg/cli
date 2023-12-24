@@ -14,7 +14,8 @@ func checkCompatibility(platformTag string) (bool, error) {
 	platforms := strings.Split(platformTag, ".")
 
 	for _, platform := range platforms {
-		// Select only manylinux with glibc version, since the rest are legacy
+		// Select only manylinux with the glibc version,
+		// since the rest are legacy
 		// https://github.com/pypa/manylinux
 		if strings.HasPrefix(platform, "manylinux_") {
 			res, err := parseAndCompare(platform)
