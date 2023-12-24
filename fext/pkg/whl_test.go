@@ -108,7 +108,8 @@ func TestPackage_GetDependencies(t *testing.T) {
 	p, err := Load(PackageName)
 	assert.Nil(t, err)
 
-	deps := p.GetDependencies()
+	deps, err := p.GetDependencies()
+	assert.Nil(t, err)
 	for _, dep := range deps {
 		assert.False(t, dep.isExtra)
 		assert.Empty(t, dep.markers)
@@ -188,7 +189,11 @@ func TestPackage_LoadFromMetaDir(t *testing.T) {
 
 	assert.Equal(t, p.Name, pFromMeta.Name)
 	assert.Equal(t, p.Version, pFromMeta.Version)
-	assert.Equal(t, p.GetDependencies(), pFromMeta.GetDependencies())
+	deps, err := p.GetDependencies()
+	assert.Nil(t, err)
+	pDeps, err := pFromMeta.GetDependencies()
+	assert.Nil(t, err)
+	assert.Equal(t, deps, pDeps)
 
 	s, err := p.GetSize()
 	s2, err := pFromMeta.GetSize()

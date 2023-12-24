@@ -26,7 +26,7 @@ func BenchmarkPackage_GetExtraDependencies(b *testing.B) {
 
 func BenchmarkPackage_GetDependencies(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ = pkg.GetDependencies()
+		_, _ = pkg.GetDependencies()
 	}
 }
 
