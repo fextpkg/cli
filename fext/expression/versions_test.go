@@ -39,6 +39,32 @@ var (
 		{"2.2.1a3", "~=", "2.0.0"},
 		{"2.2a3", "~=", "2.0.0"},
 		{"2a3", "~=", "2a0"},
+		{"2.2", ">=", "2.*"},
+		{"2.0", ">=", "2.*"},
+		{"2.0", "==", "2.*"},
+		{"2.0.1", ">", "2.*.0"},
+		{"1.9", "<", "2.*"},
+		{"1.9", "<=", "2.*"},
+		{"3.2", "!=", "2.*"},
+		{"2", "==", "2.*"},
+		{"2.5.1", "==", "2.*.1"},
+		{"2.1.1", "==", "2.*.1"},
+		{"2.0.1", "==", "2.*.1"},
+		{"2.2.1", ">=", "2.1.*"},
+		{"2.2.1", ">=", "2.2.*"},
+		{"2.2.1", "==", "2.2.*"},
+		{"2.2.0", "==", "2.2.*"},
+		{"2.2.100", "==", "2.2.*"},
+		{"2.2.100", "<=", "2.2.*"},
+		{"2", "<=", "2.*"},
+		{"2", "<=", "2.*.*"},
+		{"2", "==", "*.*.*"},
+		{"0", "==", "*.*.*"},
+		{"0.1", "==", "*.1.*"},
+		{"0.1.2", "==", "*.1.*"},
+		{"0.0.0", "==", "*.*.*"},
+		{"0.2.0", "!=", "*.1.*"},
+		{"1.2.0", "!=", "1.1.*"},
 	}
 	compareVersionFalse = [][3]string{
 		{"1.0.0", "!=", "1.0.0"},
@@ -63,9 +89,23 @@ var (
 		{"2.0", "~=", "2.0.1"},
 		{"3.0", "~=", "2.0.1"},
 		{"1.0", "~=", "2.0.1"},
+		{"2", "~=", "2.0.1"},
 		{"2.0.0", "~=", "2.0.1"},
 		{"2.45.0", "~=", "2.46.1"},
 		{"2a3", "~=", "2a4"},
+		{"2.3.2", "==", "2.2.*"},
+		{"3.3.2", "==", "2.*.*"},
+		{"2.0.0", ">", "2.*.*"},
+		{"2.0", ">", "2.*.*"},
+		{"2", ">", "2.*.*"},
+		{"1.2", ">", "2.*.*"},
+		{"2.2", ">", "*.2.*"},
+		{"2.2", ">", "*.2"},
+		{"2.2", "<", "1.*"},
+		{"1.0", "<", "1.*"},
+		{"1.0.0", "!=", "1.*"},
+		{"1.0", "!=", "1.*"},
+		{"2.5.2", "!=", "2.*.2"},
 	}
 	compareVersionInvalid = [][3]string{
 		{"test", "==", "test2"},
@@ -143,6 +183,31 @@ func TestParseVersion(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Zero(t, preVersion)
 	assert.Equal(t, version, [3]int{0, 1, 0})
+
+	version, preVersion, err = parseVersion("1.*")
+	assert.Nil(t, err)
+	assert.Zero(t, preVersion)
+	assert.Equal(t, version, [3]int{1, -1, 0})
+
+	version, preVersion, err = parseVersion("1.*.1")
+	assert.Nil(t, err)
+	assert.Zero(t, preVersion)
+	assert.Equal(t, version, [3]int{1, -1, 1})
+
+	version, preVersion, err = parseVersion("1.2.*")
+	assert.Nil(t, err)
+	assert.Zero(t, preVersion)
+	assert.Equal(t, version, [3]int{1, 2, -1})
+
+	version, preVersion, err = parseVersion("*.2.*")
+	assert.Nil(t, err)
+	assert.Zero(t, preVersion)
+	assert.Equal(t, version, [3]int{-1, 2, -1})
+
+	version, preVersion, err = parseVersion("*.*.*")
+	assert.Nil(t, err)
+	assert.Zero(t, preVersion)
+	assert.Equal(t, version, [3]int{-1, -1, -1})
 }
 
 func TestSplitConditions(t *testing.T) {

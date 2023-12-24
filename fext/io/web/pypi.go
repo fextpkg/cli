@@ -264,8 +264,7 @@ func parseAttrs(attrs []html.Attribute) (string, string) {
 		case "href":
 			link = attr.Val
 		case "data-requires-python":
-			// remove this parts, because it's works fine without it
-			versionRequirements = strings.ReplaceAll(attr.Val, ".*", "")
+			versionRequirements = strings.ReplaceAll(attr.Val, ",", "")
 		}
 	}
 	return link, versionRequirements
