@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
+      from-config: ${{ steps.extract.outputs.version }}
       tag: ${{ steps.tag.outputs.new }}
 
     steps:
@@ -61,10 +62,10 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            exe_file: "fext"
+            exe_file: "${{ env.GO_DIST_DIRECTORY }}/fext"
             platform_tag: "manylinux_2_35_x86_64"
           - os: windows-latest
-            exe_file: "fext.exe"
+            exe_file: "${{ env.GO_DIST_DIRECTORY }}/fext.exe"
             platform_tag: "win_amd64"
 
     steps:
@@ -74,13 +75,17 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
       - name: "Build application"
         run: |
-          output_dest="${{ env.GO_DIST_DIRECTORY }}/${{ matrix.exe_file }}"
-          go build -o "$output_dest"
+          cd fext
+          go build -o ${{ matrix.exe_file }}
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PY_VERSION }}
       - name: "Packaging application"
         run: make build
+        env:
+          FEXT_PLATFORM_TAG: ${{ matrix.platform_tag }}
+          FEXT_VERSION: ${{ needs.update-version.outputs.from-config }}
+          FEXT_EXE_FILE: ${{ matrix.exe_file }}
       - name: "Transfer packages to next job"
         uses: actions/upload-artifact@v4
         with:
