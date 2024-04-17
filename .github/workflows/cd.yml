@@ -62,9 +62,11 @@ jobs:
         include:
           - os: ubuntu-latest
             exe_file: "dist/fext"
+            platform: "linux"
             platform_tag: "manylinux_2_35_x86_64"
           - os: windows-latest
             exe_file: "dist/fext.exe"
+            platform: "windows"
             platform_tag: "win_amd64"
 
     steps:
@@ -86,12 +88,12 @@ jobs:
       - name: "Transfer packages to next job"
         uses: actions/upload-artifact@v4
         with:
-          name: "whl"
-          path: "${{ env.PY_DIST_DIRECTORY }}/*"
+          name: "pkg-${{ matrix.platform }}"
+          path: ${{ env.PY_DIST_DIRECTORY }}
           overwrite: true
 
   publish:
-    name: "Upload the built wheel packages to the corresponding GitHub release"
+    name: "Upload built wheel packages to the GitHub release"
     runs-on: ubuntu-latest
 
     needs:
@@ -99,13 +101,16 @@ jobs:
       - package
 
     steps:
-      - name: "Download wheel packages"
+      - name: "Download linux wheel package"
         uses: actions/download-artifact@v4
         with:
-          name: "whl"
+          name: "pkg-linux"
           path: ${{ env.PY_DIST_DIRECTORY }}
-      - name: "debug ls"
-        run: ls -a
+      - name: "Download windows wheel package"
+        uses: actions/download-artifact@v4
+        with:
+          name: "pkg-windows"
+          path: ${{ env.PY_DIST_DIRECTORY }}
       - name: "Upload packages into release"
         uses: svenstaro/upload-release-action@v2
         with:
