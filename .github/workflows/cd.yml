@@ -83,11 +83,13 @@ jobs:
           FEXT_PLATFORM_TAG: ${{ matrix.platform_tag }}
           FEXT_VERSION: ${{ needs.update-version.outputs.from-config }}
           FEXT_EXE_FILE: "fext/${{ matrix.exe_file }}"
+      - name: "debug ls"
+        run: ls fext/whl -a
       - name: "Transfer packages to next job"
         uses: actions/upload-artifact@v4
         with:
           name: "whl"
-          path: "fext/${{ env.PY_DIST_DIRECTORY }}/*"
+          path: "fext/${{ env.PY_DIST_DIRECTORY }}"
           overwrite: true
 
   publish:
