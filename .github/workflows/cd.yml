@@ -73,7 +73,7 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: "Build application"
-        run: cd fext && go build -o ${{ matrix.exe_file }} && cd -
+        run: cd fext && go build -o ${{ matrix.exe_file }}
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PY_VERSION }}
@@ -87,7 +87,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "whl"
-          path: ${{ env.PY_DIST_DIRECTORY }}
+          path: "fext/${{ env.PY_DIST_DIRECTORY }}/*"
           overwrite: true
 
   publish:
@@ -107,6 +107,6 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
          repo_token: ${{ secrets.GITHUB_TOKEN }}
-         file: "${{ env.PY_DIST_DIRECTORY }}/*"
+         file: "fext/${{ env.PY_DIST_DIRECTORY }}/*"
          file_glob: true
          tag: ${{ needs.update-version.outputs.tag }}
