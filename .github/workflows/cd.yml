@@ -114,7 +114,6 @@ jobs:
       - name: "Upload packages into release"
         uses: svenstaro/upload-release-action@v2
         with:
-         repo_token: ${{ secrets.GITHUB_TOKEN }}
          file: "${{ env.PY_DIST_DIRECTORY }}/*"
          file_glob: true
          tag: ${{ needs.update-version.outputs.tag }}
