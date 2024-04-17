@@ -83,13 +83,11 @@ jobs:
           FEXT_PLATFORM_TAG: ${{ matrix.platform_tag }}
           FEXT_VERSION: ${{ needs.update-version.outputs.from-config }}
           FEXT_EXE_FILE: "fext/${{ matrix.exe_file }}"
-      - name: "debug ls"
-        run: ls -a
       - name: "Transfer packages to next job"
         uses: actions/upload-artifact@v4
         with:
           name: "whl"
-          path: "fext/${{ env.PY_DIST_DIRECTORY }}"
+          path: "${{ env.PY_DIST_DIRECTORY }}/*"
           overwrite: true
 
   publish:
@@ -109,6 +107,6 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
          repo_token: ${{ secrets.GITHUB_TOKEN }}
-         file: "fext/${{ env.PY_DIST_DIRECTORY }}/*"
+         file: "${{ env.PY_DIST_DIRECTORY }}/*"
          file_glob: true
          tag: ${{ needs.update-version.outputs.tag }}
