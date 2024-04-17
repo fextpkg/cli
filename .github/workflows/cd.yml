@@ -84,7 +84,7 @@ jobs:
           FEXT_VERSION: ${{ needs.update-version.outputs.from-config }}
           FEXT_EXE_FILE: "fext/${{ matrix.exe_file }}"
       - name: "debug ls"
-        run: ls fext/whl -a
+        run: ls fext -a
       - name: "Transfer packages to next job"
         uses: actions/upload-artifact@v4
         with:
