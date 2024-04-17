@@ -76,14 +76,10 @@ jobs:
         run: |
           cd fext
           go build -o ${{ matrix.exe_file }}
+          cd -
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PY_VERSION }}
-      - name: "debug ls"
-        run: |
-          ls -a
-          ls dist -a
-          ls /
       - name: "Packaging application"
         run: make build
         env:
