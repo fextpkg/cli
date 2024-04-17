@@ -61,10 +61,10 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            exe_file: "/dist/fext"
+            exe_file: "dist/fext"
             platform_tag: "manylinux_2_35_x86_64"
           - os: windows-latest
-            exe_file: "/dist/fext.exe"
+            exe_file: "dist/fext.exe"
             platform_tag: "win_amd64"
 
     steps:
