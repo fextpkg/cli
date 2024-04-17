@@ -88,7 +88,7 @@ jobs:
         with:
           name: "whl"
           path: "${{ env.PY_DIST_DIRECTORY }}/*"
-          overwrite: true
+#          overwrite: true
 
   publish:
     name: "Upload the built wheel packages to the corresponding GitHub release"
@@ -103,6 +103,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: "whl"
+          path: ${{ env.PY_DIST_DIRECTORY }}
+      - name: "debug ls"
+        run: ls -a
       - name: "Upload packages into release"
         uses: svenstaro/upload-release-action@v2
         with:
