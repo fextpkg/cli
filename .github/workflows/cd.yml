@@ -36,7 +36,7 @@ jobs:
         run: |
           # Retrieve latest commit info
           latest_commit=$(git log -1 --pretty=format:"%an|%ae")
-          IFS='|' read -r author_name author_email <<< "$last_commit"
+          IFS='|' read -r author_name author_email <<< "$latest_commit"
           # Setup git config
           git config --global user.email "$author_email"
           git config --global user.name "$author_name"
