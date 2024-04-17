@@ -11,7 +11,6 @@ on:
 
 env:
   GO_VERSION: "1.22"
-  GO_DIST_DIRECTORY: "bin"
   PY_VERSION: "3.12"
   PY_DIST_DIRECTORY: "whl"
 
@@ -62,10 +61,10 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            exe_file: "${{ env.GO_DIST_DIRECTORY }}/fext"
+            exe_file: "/dist/fext"
             platform_tag: "manylinux_2_35_x86_64"
           - os: windows-latest
-            exe_file: "${{ env.GO_DIST_DIRECTORY }}/fext.exe"
+            exe_file: "/dist/fext.exe"
             platform_tag: "win_amd64"
 
     steps:
