@@ -73,10 +73,7 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: "Build application"
-        run: |
-          cd fext
-          go build -o ${{ matrix.exe_file }}
-          cd -
+        run: cd fext && go build -o ${{ matrix.exe_file }} && cd -
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PY_VERSION }}
@@ -91,6 +88,7 @@ jobs:
         with:
           name: "whl"
           path: ${{ env.PY_DIST_DIRECTORY }}
+          overwrite: true
 
   publish:
     name: "Upload the built wheel packages to the corresponding GitHub release"
