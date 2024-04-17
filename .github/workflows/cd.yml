@@ -80,17 +80,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PY_VERSION }}
-      - name: "debug ls"
-        run: |
-          ls -a
-          ls fext -a
-          ls /
       - name: "Packaging application"
         run: make build
         env:
           FEXT_PLATFORM_TAG: ${{ matrix.platform_tag }}
           FEXT_VERSION: ${{ needs.update-version.outputs.from-config }}
-          FEXT_EXE_FILE: ${{ matrix.exe_file }}
+          FEXT_EXE_FILE: "fext/${{ matrix.exe_file }}"
       - name: "Transfer packages to next job"
         uses: actions/upload-artifact@v4
         with:
