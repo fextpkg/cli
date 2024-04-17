@@ -83,7 +83,7 @@ jobs:
       - name: "debug ls"
         run: |
           ls -a
-          ls dist -a
+          ls fext -a
           ls /
       - name: "Packaging application"
         run: make build
