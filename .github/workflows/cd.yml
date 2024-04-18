@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - "main"
-      - "perf/gha" # for tests
 
 env:
   # Use latest stable version.
@@ -14,7 +13,7 @@ env:
 
 jobs:
   update-version:
-    name: "Create tag based on version from the config"
+    name: "Create git tag"
     runs-on: ubuntu-latest
 
     outputs:
