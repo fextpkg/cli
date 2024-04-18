@@ -5,12 +5,10 @@ on:
     branches:
       - "main"
       - "perf/gha" # for tests
-  pull_request:
-    branches:
-      - "main"
 
 env:
-  GO_VERSION: "1.22"
+  # Use latest stable version.
+  GO_VERSION: "stable"
   PY_VERSION: "3.12"
   PY_DIST_DIRECTORY: "whl"
 
@@ -20,13 +18,16 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
+      # Semantic version.
       from-config: ${{ steps.extract.outputs.version }}
+      # "v" + Semantic version.
       tag: ${{ steps.tag.outputs.new }}
 
     steps:
       - uses: actions/checkout@v4
       - name: "Extract version from config file"
         id: extract
+        # Extract the string value of the constant "Version" from the .go file.
         run: |
           v=$(grep -oP 'Version\s*=\s*"\K[^"]+' fext/config/config.go)
           echo "version=$v" >> "$GITHUB_OUTPUT"
@@ -34,25 +35,23 @@ jobs:
         # Inside the container, git config is empty,
         # so we fill it similarly to the action initiator.
         run: |
-          # Retrieve latest commit info
           latest_commit=$(git log -1 --pretty=format:"%an|%ae")
           IFS='|' read -r author_name author_email <<< "$latest_commit"
-          # Setup git config
           git config --global user.email "$author_email"
           git config --global user.name "$author_name"
       - name: "Create tag"
         id: tag
+        # Add a new tag to Git, pulled from the config.
+        # The authorship goes to the initiator of the latest commit.
         run: |
           tag="v${{ steps.extract.outputs.version }}"
           current_date=$(date +"%d %B %Y")
-          # Create a new tag based on specified version
           git tag -a "$tag" -m "Release $tag of $current_date"
           git push origin "$tag"
-          # Share tag to other jobs
           echo "new=$tag" >> "$GITHUB_OUTPUT"
 
   package:
-    name: "Build and package into wheel format"
+    name: "Build and package"
     runs-on: ${{ matrix.os }}
     needs:
       - update-version
@@ -61,39 +60,49 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            exe_file: "dist/fext"
+            exe_file: "fext"
             platform: "linux"
             platform_tag: "manylinux_2_35_x86_64"
           - os: windows-latest
-            exe_file: "dist/fext.exe"
+            exe_file: "fext.exe"
             platform: "windows"
             platform_tag: "win_amd64"
 
     steps:
+      # Prepare environment.
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
-      - name: "Build application"
-        run: cd fext && go build -o ${{ matrix.exe_file }}
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PY_VERSION }}
+          check-latest: true
+      # Compile into binary file.
+      - name: "Build application"
+        run: cd fext && go build -o "dist/${{ matrix.exe_file }}"
+      # Package into wheel file.
       - name: "Packaging application"
         run: make build
         env:
           FEXT_PLATFORM_TAG: ${{ matrix.platform_tag }}
           FEXT_VERSION: ${{ needs.update-version.outputs.from-config }}
-          FEXT_EXE_FILE: "fext/${{ matrix.exe_file }}"
-      - name: "Transfer packages to next job"
+          FEXT_EXE_FILE: "fext/dist/${{ matrix.exe_file }}"
+      # This step blocks the execution of the package publication job,
+      # ensuring that we publish packages for ALL specified platforms.
+      # If an error occurs within this job, the publication won't be executed.
+      - name: "Transfer package to the next job"
         uses: actions/upload-artifact@v4
         with:
+          # Artifact doesn't support adding files to an existing storage,
+          # so it creates a separate one for each platform.
           name: "pkg-${{ matrix.platform }}"
+          # the Make script saves the packaged application into this directory
+          # located within a $GITHUB_WORKSPACE.
           path: ${{ env.PY_DIST_DIRECTORY }}
-          overwrite: true
 
   publish:
-    name: "Upload built wheel packages to the GitHub release"
+    name: "Upload to the GitHub release"
     runs-on: ubuntu-latest
 
     needs:
@@ -101,16 +110,18 @@ jobs:
       - package
 
     steps:
-      - name: "Download linux wheel package"
+      # Duplicate is necessary to ensure the correctness of execution steps.
+      - name: "Download linux package"
         uses: actions/download-artifact@v4
         with:
           name: "pkg-linux"
           path: ${{ env.PY_DIST_DIRECTORY }}
-      - name: "Download windows wheel package"
+      - name: "Download windows package"
         uses: actions/download-artifact@v4
         with:
           name: "pkg-windows"
           path: ${{ env.PY_DIST_DIRECTORY }}
+      # Upload all packaged files to the corresponding release on GitHub.
       - name: "Upload packages into release"
         uses: svenstaro/upload-release-action@v2
         with:
