@@ -1,10 +1,11 @@
-name: 'CI'
+name: "CI"
 
+# There's no need to run the workflow on every commit,
+# so it only runs on final changes.
 on:
   push:
     branches:
       - "main"
-      - "perf/gha" # for tests
   pull_request:
     branches:
       - "main"
@@ -14,7 +15,7 @@ env:
   GO_VERSION: "stable"
 
 jobs:
-  test-coverage:
+  coverage:
     name: "Check coverage"
     runs-on: ubuntu-latest
 
@@ -30,8 +31,11 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  test-different-version:
+  test:
+    # Test how compilation and tests pass on different platforms and versions of Go.
     name: "Test on version"
+    # The important thing is not the version of the platform it will run on,
+    # but rather the platform itself.
     runs-on: ${{ matrix.os }}-latest
 
     strategy:
@@ -39,6 +43,7 @@ jobs:
         os:
           - ubuntu
           - windows
+          # macOS promises to someday appear here...
         go-version:
           - "1.22"
           - "1.21"
