@@ -15,7 +15,7 @@ env:
 
 jobs:
   test-coverage:
-    name: "Test coverage"
+    name: "Check coverage"
     runs-on: ubuntu-latest
 
     steps:
@@ -32,13 +32,13 @@ jobs:
 
   test-different-version:
     name: "Test on version"
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}-latest
 
     strategy:
       matrix:
         os:
-          - ubuntu-latest
-          - windows-latest
+          - ubuntu
+          - windows
         go-version:
           - "1.22"
           - "1.21"
