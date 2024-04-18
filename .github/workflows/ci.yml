@@ -1,27 +1,60 @@
-name: CI
+name: "CI"
 
+# There's no need to run the workflow on every commit,
+# so it only runs on final changes.
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - "main"
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - "main"
+
+env:
+  # Use latest stable version.
+  GO_VERSION: "stable"
 
 jobs:
-
-  build:
+  coverage:
+    name: "Check coverage"
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.20'
-
-      - name: Test
+          go-version: ${{ env.GO_VERSION }}
+      - name: "Generate reports"
         run: cd fext && go test -race ./... -coverprofile=coverage.out -covermode=atomic
-
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+      - name: "Upload reports to Codecov"
+        uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  test:
+    # Test how compilation and tests pass on different platforms and versions of Go.
+    name: "Test on version"
+    # The important thing is not the version of the platform it will run on,
+    # but rather the platform itself.
+    runs-on: ${{ matrix.os }}-latest
+
+    strategy:
+      matrix:
+        os:
+          - ubuntu
+          - windows
+          # macOS promises to someday appear here...
+        go-version:
+          - "1.22"
+          - "1.21"
+          - "1.20"
+          - "1.19"
+          - "1.18"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: "Test application"
+        run: cd fext && go test -race ./...
